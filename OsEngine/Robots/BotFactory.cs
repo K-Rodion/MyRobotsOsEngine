@@ -24,6 +24,7 @@ using OsEngine.Robots.Trend;
 using OsEngine.Robots.OnScriptIndicators;
 using OsEngine.Robots.Screeners;
 using OsEngine.Robots.VolumeReversal;
+using OsEngine.Robots.FrontRunner;
 
 namespace OsEngine.Robots
 {
@@ -38,6 +39,7 @@ namespace OsEngine.Robots
         public static List<string> GetNamesStrategy()
         {
             List<string> result = new List<string>();
+            result.Add("FrontRunnerBot");
             result.Add("VolumeReversalRobot");
             result.Add("SmaScreener");
             result.Add("Fisher");
@@ -123,6 +125,10 @@ namespace OsEngine.Robots
             if (nameClass == "SmaScreener")
             {
                 bot = new SmaScreener(name, startProgram);
+            }
+            if (nameClass == "FrontRunnerBot")
+            {
+                bot = new FrontRunnerBot(name, startProgram);
             }
             if (nameClass == "VolumeReversalRobot")
             {
