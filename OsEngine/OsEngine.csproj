@@ -366,6 +366,7 @@
     <Compile Include="Charts\CandleChart\Indicators\IndicarotCreateUi.xaml.cs">
       <DependentUpon>IndicarotCreateUi.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Commands\DelegateCommand.cs" />
     <Compile Include="Entity\AcceptDialogUi.xaml.cs">
       <DependentUpon>AcceptDialogUi.xaml</DependentUpon>
     </Compile>
