@@ -49,7 +49,7 @@ namespace OsEngine.Robots.FrontRunner.ViewModel
         }
         
 
-        public decimal Take
+        public int Take
         {
             get => _bot.Take;
 
