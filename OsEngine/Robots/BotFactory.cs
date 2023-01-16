@@ -25,6 +25,7 @@ using OsEngine.Robots.OnScriptIndicators;
 using OsEngine.Robots.Screeners;
 using OsEngine.Robots.VolumeReversal;
 using OsEngine.Robots.FrontRunner;
+using OsEngine.Robots.FrontRunner.Model;
 
 namespace OsEngine.Robots
 {

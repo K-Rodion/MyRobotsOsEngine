@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OsEngine.Robots.FrontRunner.Model;
+using OsEngine.Robots.FrontRunner.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +21,14 @@ namespace OsEngine.Robots.FrontRunner.View
     /// </summary>
     public partial class FrontRunnerUI : Window
     {
-        public FrontRunnerUI()
+        public FrontRunnerUI(FrontRunnerBot robot)
         {
             InitializeComponent();
+
+            vm = new VM(robot);
+
+            DataContext = vm;
         }
+        private VM vm;
     }
 }

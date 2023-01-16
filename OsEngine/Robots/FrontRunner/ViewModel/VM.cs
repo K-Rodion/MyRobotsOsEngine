@@ -75,16 +75,15 @@ namespace OsEngine.Robots.FrontRunner.ViewModel
 
         public Edit Edit
         {
-            get => _edit;
+            get => _bot.Edit;
 
             set
             {
-                _edit = value;
+                _bot.Edit = value;
                 OnPropertyChanged(nameof(Edit));
             }
         }
-        private Edit _edit;
-
+      
         #endregion
 
         #region Commands =====================================================================
