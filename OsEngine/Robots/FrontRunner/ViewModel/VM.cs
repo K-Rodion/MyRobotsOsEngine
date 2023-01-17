@@ -71,7 +71,62 @@ namespace OsEngine.Robots.FrontRunner.ViewModel
                 OnPropertyChanged(nameof(Lot));
             }
         }
-       
+
+        public decimal EntryPrice
+        {
+            get => _bot.EntryPrice;
+
+            set
+            {
+                _bot.EntryPrice = value;
+                OnPropertyChanged(nameof(EntryPrice));
+            }
+        }
+
+        public decimal CurrentLot
+        {
+            get => _bot.CurrentLot;
+
+            set
+            {
+                _bot.CurrentLot = value;
+                OnPropertyChanged(nameof(CurrentLot));
+            }
+        }
+
+        public decimal ClosePrice
+        {
+            get => _bot.ClosePrice;
+
+            set
+            {
+                _bot.ClosePrice = value;
+                OnPropertyChanged(nameof(ClosePrice));
+            }
+        }
+
+        public string SecururityName
+        {
+            get => _bot.SecururityName;
+
+            set
+            {
+                _bot.SecururityName = value;
+                OnPropertyChanged(nameof(SecururityName));
+            }
+        }
+
+        public string State
+        {
+            get => _bot.State;
+
+            set
+            {
+                _bot.State = value;
+                OnPropertyChanged(nameof(State));
+            }
+        }
+
 
         public Edit Edit
         {

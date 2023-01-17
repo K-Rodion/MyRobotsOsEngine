@@ -22,9 +22,13 @@ namespace OsEngine.Robots.FrontRunner.Model
             _tab.MarketDepthUpdateEvent += _tab_MarketDepthUpdateEvent;
 
             _tab.PositionOpeningFailEvent += _tab_PositionOpeningFailEvent;
+
+            _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
         }
 
-       
+        
+
+
 
 
 
@@ -40,9 +44,21 @@ namespace OsEngine.Robots.FrontRunner.Model
 
         public decimal Lot = 1;
 
-        public Position Position = null;
+        public Position PositionLong = null;
+
+        public Position PositionShort = null;
 
         private BotTabSimple _tab;
+
+        public decimal EntryPrice;
+
+        public string SecururityName;
+
+        public decimal CurrentLot;
+
+        public string State;
+
+        public decimal ClosePrice;
 
         #endregion
 
@@ -56,7 +72,7 @@ namespace OsEngine.Robots.FrontRunner.Model
             {
                 _edit = value;
 
-                if (_edit == Edit.Stop && Position != null && Position.State == PositionStateType.Opening)
+                if (_edit == Edit.Stop && (PositionLong != null || PositionShort != null) && (PositionLong.State == PositionStateType.Opening || PositionShort.State == PositionStateType.Opening))
                 {
                     _tab.CloseAllOrderInSystem();
                 }
@@ -71,10 +87,23 @@ namespace OsEngine.Robots.FrontRunner.Model
 
         private void _tab_PositionOpeningFailEvent(Position pos)
         {
-            Position = null;
+            //Position = null;
         }
 
-       
+        private void _tab_PositionOpeningSuccesEvent(Position pos)
+        {
+            EntryPrice = pos.EntryPrice;
+
+            SecururityName = pos.SecurityName;
+
+            CurrentLot = pos.OpenVolume;
+
+            State = pos.State.ToString();
+
+            ClosePrice = pos.ClosePrice;
+        }
+
+
         private void _tab_MarketDepthUpdateEvent(MarketDepth marketDepth)
         {
             if (marketDepth.SecurityNameCode != _tab.Securiti.Name)
@@ -87,81 +116,123 @@ namespace OsEngine.Robots.FrontRunner.Model
                 return;
             }
 
-            List<Position> _positions = _tab.PositionsOpenAll;
+            List<Position> _positionsLong = _tab.PositionOpenLong;
 
-            if (_positions != null && _positions.Count > 0)
+            List<Position> _positionsShort = _tab.PositionOpenShort;
+
+            if (_positionsLong != null && _positionsLong.Count > 0 && PositionLong.State == PositionStateType.Open)
             {
-                foreach (Position pos in _positions)
+                foreach (Position pos in _positionsLong)
                 {
-                    if (pos.Direction == Side.Sell) // если позиция открылась в шорт:
-                    {
-                        decimal takePrice = Position.EntryPrice - Take * _tab.Securiti.PriceStep;
+                    decimal takePrice = PositionLong.EntryPrice + Take * _tab.Securiti.PriceStep;
 
-                        _tab.CloseAtProfit(Position, takePrice, takePrice); // выставляем тейк-профит
-                    }
-                    else if (pos.Direction == Side.Buy) // если позиция открылась в лонг:
-                    {
-                        decimal takePrice = Position.EntryPrice + Take * _tab.Securiti.PriceStep;
-
-                        _tab.CloseAtProfit(Position, takePrice, takePrice); // выставляем тейк-профит
-                    }
+                    _tab.CloseAtProfit(PositionLong, takePrice, takePrice); // выставляем тейк-профит
                 }
             }
 
-            
-
-            for (int i = 0; i < marketDepth.Asks.Count; i++)
+            if (_positionsShort != null && _positionsShort.Count > 0 && PositionShort.State == PositionStateType.Open)
             {
-                if (marketDepth.Asks[i].Ask >= BigVolume && Position == null)  // пробегаемся по стакану асков: если есть заявка на большой объем? нет открытых позиций и нет активных заявок, выставляем лимитку на продажу
+                foreach (Position pos in _positionsShort)
                 {
-                    decimal price = marketDepth.Asks[i].Price - Offset * _tab.Securiti.PriceStep;
+                    decimal takePrice = PositionShort.EntryPrice + Take * _tab.Securiti.PriceStep;
 
-                    //_tab.SellAtLimit(Lot, price);
-                }
-
-                if (Position != null && marketDepth.Asks[i].Price == Position.EntryPrice 
-                                     && marketDepth.Asks[i].Ask < BigVolume/3)// если позиция открыта, текущая цена равна цене открытия и заявка с большим объемом сократилась более чем в 3? раза:
-                {
-                    //_tab.CloseAtMarket(Position, Position.OpenVolume);// закрываем открытую позицию по рынку
+                    _tab.CloseAtProfit(PositionShort, takePrice, takePrice); // выставляем тейк-профит
                 }
             }
 
-            for (int i = 0; i < marketDepth.Bids.Count; i++)    
+            Task.Run(() =>
             {
-                if (marketDepth.Bids[i].Bid >= BigVolume && Position == null)  // пробегаемся по стакану бидов: если есть заявка на большой объем, нет открытых позиций и нет активных заявок, выставляем лимитку на покупку
+                for (int i = 0; i < marketDepth.Asks.Count; i++)
                 {
-                    decimal price = marketDepth.Bids[i].Price + Offset * _tab.Securiti.PriceStep;
-
-                    Position = _tab.BuyAtLimit(Lot, price);
-
-                    if (Position.State != PositionStateType.Open && Position.State != PositionStateType.Opening)
+                    if (marketDepth.Asks[i].Ask >= BigVolume &&
+                        PositionShort == null) // пробегаемся по стакану асков: если есть заявка на большой объем? нет открытых позиций и нет активных заявок, выставляем лимитку на продажу
                     {
-                        Position = null;
-                    }
-                }
+                        decimal price = marketDepth.Asks[i].Price - Offset * _tab.Securiti.PriceStep;
 
-                if (Position != null && marketDepth.Bids[i].Price == Position.EntryPrice - Offset * _tab.Securiti.PriceStep
-                                     && marketDepth.Bids[i].Bid < BigVolume / 2)// если позиция открыта, текущая цена равна цене открытия и заявка с большим объемом сократилась более чем в 3? раза:
-                {
-                    if (Position.State == PositionStateType.Open) // позиция уже открыта
-                    {
-                        _tab.CloseAtMarket(Position, Position.OpenVolume);// закрываем открытую позицию по рынку
+                        PositionShort = _tab.SellAtLimit(Lot, price);
+
+                        if (PositionShort.State != PositionStateType.Open && PositionShort.State != PositionStateType.Opening)
+                        {
+                            PositionShort = null;
+                        }
                     }
-                    else if (Position.State == PositionStateType.Opening) // позиция открывается, т.е лимитка еще не сработала
+
+                    if (PositionShort != null && marketDepth.Asks[i].Price ==
+                                              PositionShort.EntryPrice + Offset * _tab.Securiti.PriceStep
+                                              && marketDepth.Asks[i].Ask <
+                                              BigVolume /
+                                              2) // если позиция открыта, текущая цена равна цене открытия и заявка с большим объемом сократилась более чем в 2? раза:
+                    {
+                        if (PositionShort.State == PositionStateType.Open) // позиция уже открыта
+                        {
+                            _tab.CloseAtMarket(PositionShort, PositionShort.OpenVolume); // закрываем открытую позицию по рынку
+                        }
+                        else if
+                            (PositionShort.State ==
+                             PositionStateType.Opening) // позиция открывается, т.е лимитка еще не сработала
+                        {
+                            _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        }
+                    }
+                    else if (PositionShort != null && PositionShort.State == PositionStateType.Opening &&
+                             marketDepth.Asks[i].Ask >= BigVolume && marketDepth.Asks[i].Price >
+                             PositionShort.EntryPrice + Offset * _tab.Securiti.PriceStep)
                     {
                         _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        PositionShort = null;
+                        break;
                     }
-                    
-                    
                 }
-                else if (Position != null && Position.State == PositionStateType.Opening &&
-                         marketDepth.Bids[i].Bid >= BigVolume && marketDepth.Bids[i].Price > Position.EntryPrice - Offset * _tab.Securiti.PriceStep)
+            });
+
+            Task.Run(() =>
+            {
+                for (int i = 0; i < marketDepth.Bids.Count; i++)
                 {
-                    _tab.CloseAllOrderInSystem(); // снимаем все заявки
-                    Position = null;
-                    break;
+                    if (marketDepth.Bids[i].Bid >= BigVolume &&
+                        PositionLong == null) // пробегаемся по стакану бидов: если есть заявка на большой объем, нет открытых позиций и нет активных заявок, выставляем лимитку на покупку
+                    {
+                        decimal price = marketDepth.Bids[i].Price + Offset * _tab.Securiti.PriceStep;
+
+                        PositionLong = _tab.BuyAtLimit(Lot, price);
+
+                        if (PositionLong.State != PositionStateType.Open && PositionLong.State != PositionStateType.Opening)
+                        {
+                            PositionLong = null;
+                        }
+                    }
+
+                    if (PositionLong != null && marketDepth.Bids[i].Price ==
+                                             PositionLong.EntryPrice - Offset * _tab.Securiti.PriceStep
+                                             && marketDepth.Bids[i].Bid <
+                                             BigVolume /
+                                             2) // если позиция открыта, текущая цена равна цене открытия и заявка с большим объемом сократилась более чем в 2? раза:
+                    {
+                        if (PositionLong.State == PositionStateType.Open) // позиция уже открыта
+                        {
+                            _tab.CloseAtMarket(PositionLong, PositionLong.OpenVolume); // закрываем открытую позицию по рынку
+                        }
+                        else if
+                            (PositionLong.State ==
+                             PositionStateType.Opening) // позиция открывается, т.е лимитка еще не сработала
+                        {
+                            _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        }
+
+
+                    }
+                    else if (PositionLong != null && PositionLong.State == PositionStateType.Opening &&
+                             marketDepth.Bids[i].Bid >= BigVolume && marketDepth.Bids[i].Price >
+                             PositionLong.EntryPrice - Offset * _tab.Securiti.PriceStep)
+                    {
+                        _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        PositionLong = null;
+                        break;
+                    }
                 }
-            }
+            });
+
+
         }
 
         public override string GetNameStrategyType()
