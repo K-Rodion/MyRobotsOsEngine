@@ -10,6 +10,7 @@ using OsEngine.OsTrader.Panels;
 using OsEngine.OsTrader.Panels.Tab;
 using OsEngine.Robots.FrontRunner.View;
 using OsEngine.Robots.FrontRunner.ViewModel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace OsEngine.Robots.FrontRunner.Model
 {
@@ -26,9 +27,15 @@ namespace OsEngine.Robots.FrontRunner.Model
             _tab.PositionOpeningFailEvent += _tab_PositionOpeningFailEvent;
 
             _tab.PositionOpeningSuccesEvent += _tab_PositionOpeningSuccesEvent;
+
+           
         }
 
         
+
+
+
+
 
 
 
@@ -123,24 +130,30 @@ namespace OsEngine.Robots.FrontRunner.Model
 
             List<Position> _positionsShort = _tab.PositionOpenShort;
 
-            if (_positionsLong != null && _positionsLong.Count > 0 && PositionLong.State == PositionStateType.Open)
+            if (PositionLong != null && PositionLong.State != PositionStateType.Open && PositionLong.State != PositionStateType.Opening)
             {
-                foreach (Position pos in _positionsLong)
-                {
-                    decimal takePrice = PositionLong.EntryPrice + Take * _tab.Securiti.PriceStep;
-
-                    _tab.CloseAtProfit(PositionLong, takePrice, takePrice); // выставляем тейк-профит
-                }
+                PositionLong = null;
+                Log("PositionLong 5 = null");
             }
 
-            if (_positionsShort != null && _positionsShort.Count > 0 && PositionShort.State == PositionStateType.Open)
+            if (PositionShort != null && PositionShort.State != PositionStateType.Open && PositionShort.State != PositionStateType.Opening)
             {
-                foreach (Position pos in _positionsShort)
-                {
-                    decimal takePrice = PositionShort.EntryPrice + Take * _tab.Securiti.PriceStep;
+                PositionShort = null;
+                Log("PositionShort 5 = null");
+            }
 
-                    _tab.CloseAtProfit(PositionShort, takePrice, takePrice); // выставляем тейк-профит
-                }
+            if (PositionLong != null && PositionLong.State == PositionStateType.Open)
+            {
+                decimal takePrice = PositionLong.EntryPrice + Take * _tab.Securiti.PriceStep;
+
+                _tab.CloseAtProfit(PositionLong, takePrice, takePrice); // выставляем тейк-профит
+            }
+
+            if (PositionShort != null && PositionShort.State == PositionStateType.Open)
+            {
+                decimal takePrice = PositionShort.EntryPrice - Take * _tab.Securiti.PriceStep;
+
+                _tab.CloseAtProfit(PositionShort, takePrice, takePrice); // выставляем тейк-профит
             }
 
             for (int i = 0; i < marketDepth.Asks.Count; i++)
@@ -175,7 +188,7 @@ namespace OsEngine.Robots.FrontRunner.Model
                         (PositionShort.State ==
                          PositionStateType.Opening) // позиция открывается, т.е лимитка еще не сработала
                     {
-                        _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        _tab.CloseAllOrderToPosition(PositionShort); // снимаем все заявки
                         PositionShort = null;
                         Log("PositionShort 3 = null");
                     }
@@ -184,7 +197,7 @@ namespace OsEngine.Robots.FrontRunner.Model
                          marketDepth.Asks[i].Ask >= BigVolume && marketDepth.Asks[i].Price <
                          PositionShort.EntryPrice - Offset * _tab.Securiti.PriceStep)
                 {
-                    _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                    _tab.CloseAllOrderToPosition(PositionShort); // снимаем все заявки
                     PositionShort = null;
                     Log("PositionShort 4 = null");
                     break;
@@ -222,7 +235,7 @@ namespace OsEngine.Robots.FrontRunner.Model
                         (PositionLong.State ==
                          PositionStateType.Opening) // позиция открывается, т.е лимитка еще не сработала
                     {
-                        _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                        _tab.CloseAllOrderToPosition(PositionLong); // снимаем все заявки
                         PositionLong = null;
                         Log("PositionLong 3 = null");
                     }
@@ -233,7 +246,7 @@ namespace OsEngine.Robots.FrontRunner.Model
                          marketDepth.Bids[i].Bid >= BigVolume && marketDepth.Bids[i].Price >
                          PositionLong.EntryPrice + Offset * _tab.Securiti.PriceStep)
                 {
-                    _tab.CloseAllOrderInSystem(); // снимаем все заявки
+                    _tab.CloseAllOrderToPosition(PositionLong); // снимаем все заявки
                     PositionLong = null;
                     Log("PositionLong 4 = null");
                     break;
