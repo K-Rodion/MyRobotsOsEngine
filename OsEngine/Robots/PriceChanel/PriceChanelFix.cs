@@ -22,7 +22,7 @@ namespace OsEngine.Robots.PriceChanel
 
             LenghtDown = CreateParameter("Lenght Down", 12, 5, 80, 2);
 
-            Mode = CreateParameter("Mode", "Off", new[] { "Off", "On"});
+            Mode = CreateParameter("Mode", "Off", new[] { "Off", "On", "OnlyLong", "OnlyShort"});
 
             Lot = CreateParameter("Lot", 10, 5, 20, 1);
 
@@ -87,7 +87,8 @@ namespace OsEngine.Robots.PriceChanel
 
             if (candle.Close > lastUp
                 && candle.Open < lastUp
-                && positions.Count ==0)
+                && positions.Count ==0
+                && (Mode.ValueString == "On" || Mode.ValueString == "OnlyLong"))
             {
                 decimal riskMoney = _tab.Portfolio.ValueBegin * Risk.ValueDecimal / 100;
 
@@ -102,6 +103,24 @@ namespace OsEngine.Robots.PriceChanel
                 _tab.BuyAtMarket((int)lot);
             }
 
+            if (candle.Close < lastDown
+                && candle.Open > lastDown
+                && positions.Count == 0
+                && (Mode.ValueString == "On" || Mode.ValueString == "OnlyShort"))
+            {
+                decimal riskMoney = _tab.Portfolio.ValueBegin * Risk.ValueDecimal / 100;
+
+                decimal costPriceStep = _tab.Securiti.PriceStepCost;
+
+                costPriceStep = 1;
+
+                decimal steps = (lastUp - lastDown) / _tab.Securiti.PriceStep;
+
+                decimal lot = riskMoney / (steps * costPriceStep);
+
+                _tab.SellAtMarket((int)lot);
+            }
+
             if (positions.Count > 0)
             {
                 Trailing(positions);
@@ -112,6 +131,8 @@ namespace OsEngine.Robots.PriceChanel
         {
             decimal lastDown = _pc.DataSeries[1].Values.Last();
 
+            decimal lastUp = _pc.DataSeries[0].Values.Last();
+
             foreach (Position pos in positions)
             {
                 if (pos.State == PositionStateType.Open)
@@ -119,6 +140,10 @@ namespace OsEngine.Robots.PriceChanel
                     if (pos.Direction == Side.Buy)
                     {
                         _tab.CloseAtTrailingStop(pos, lastDown, lastDown - 100*_tab.Securiti.PriceStep);
+                    }
+                    else if (pos.Direction == Side.Sell)
+                    {
+                        _tab.CloseAtTrailingStop(pos, lastUp, lastUp + 100 * _tab.Securiti.PriceStep);
                     }
                 }
             }
