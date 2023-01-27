@@ -26,6 +26,7 @@ using OsEngine.Robots.Screeners;
 using OsEngine.Robots.VolumeReversal;
 using OsEngine.Robots.FrontRunner;
 using OsEngine.Robots.FrontRunner.Model;
+using OsEngine.Robots.PriceChanel;
 
 namespace OsEngine.Robots
 {
@@ -40,6 +41,7 @@ namespace OsEngine.Robots
         public static List<string> GetNamesStrategy()
         {
             List<string> result = new List<string>();
+            result.Add("PriceChanelFix");
             result.Add("FrontRunnerBot");
             result.Add("VolumeReversalRobot");
             result.Add("SmaScreener");
@@ -126,6 +128,10 @@ namespace OsEngine.Robots
             if (nameClass == "SmaScreener")
             {
                 bot = new SmaScreener(name, startProgram);
+            }
+            if (nameClass == "PriceChanelFix")
+            {
+                bot = new PriceChanelFix(name, startProgram);
             }
             if (nameClass == "FrontRunnerBot")
             {

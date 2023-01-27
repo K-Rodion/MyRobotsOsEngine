@@ -35,21 +35,6 @@ namespace OsEngine.Robots.FrontRunner.Model
         }
 
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         #region Fields========================================================================
 
         public decimal BigVolume = 200;
@@ -209,6 +194,8 @@ namespace OsEngine.Robots.FrontRunner.Model
                         if ((PositionShort.State == PositionStateType.Open) || (PositionShort.State == PositionStateType.Closing)) // позиция уже открыта
                         {
                             _tab.CloseAllOrderToPosition(PositionShort);
+                            Log("Снятие лимитки из-за снижения BigVolume" + PositionShort.State);
+
                             _tab.CloseAtMarket(PositionShort, PositionShort.OpenVolume); // закрываем открытую позицию по рынку
 
                             PositionShort = null;
@@ -266,6 +253,8 @@ namespace OsEngine.Robots.FrontRunner.Model
                         if ((PositionLong.State == PositionStateType.Open) || PositionLong.State == PositionStateType.Closing) // позиция уже открыта
                         {
                             _tab.CloseAllOrderToPosition(PositionLong);
+                            Log("Снятие лимитки из-за снижения BigVolume" + PositionLong.State);
+
                             _tab.CloseAtMarket(PositionLong, PositionLong.OpenVolume); // закрываем открытую позицию по рынку
 
                             PositionLong = null;
