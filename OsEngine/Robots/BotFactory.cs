@@ -27,6 +27,7 @@ using OsEngine.Robots.VolumeReversal;
 using OsEngine.Robots.FrontRunner;
 using OsEngine.Robots.FrontRunner.Model;
 using OsEngine.Robots.PriceChanel;
+using OsEngine.Robots.CryptoCluster;
 
 namespace OsEngine.Robots
 {
@@ -42,6 +43,7 @@ namespace OsEngine.Robots
         {
             List<string> result = new List<string>();
             result.Add("PriceChanelFix");
+            result.Add("ClusterBot");
             result.Add("FrontRunnerBot");
             result.Add("VolumeReversalRobot");
             result.Add("SmaScreener");
@@ -132,6 +134,10 @@ namespace OsEngine.Robots
             if (nameClass == "PriceChanelFix")
             {
                 bot = new PriceChanelFix(name, startProgram);
+            }
+            if (nameClass == "ClusterBot")
+            {
+                bot = new ClusterBot(name, startProgram);
             }
             if (nameClass == "FrontRunnerBot")
             {

@@ -897,6 +897,7 @@
     <Compile Include="Robots\BaseVM.cs" />
     <Compile Include="Robots\BotFactory.cs" />
     <Compile Include="Robots\CounterTrend\ClusterCountertrend.cs" />
+    <Compile Include="Robots\CryptoCluster\ClusterBot.cs" />
     <Compile Include="Robots\FrontRunner\Model\FrontRunnerBot.cs" />
     <Compile Include="Robots\FrontRunner\ViewModel\VM.cs" />
     <Compile Include="Robots\FrontRunner\View\FrontRunnerUI.xaml.cs">
