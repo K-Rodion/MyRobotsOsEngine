@@ -194,14 +194,19 @@ namespace OsEngine.Robots.FrontRunner.Model
                         if ((PositionShort.State == PositionStateType.Open) || (PositionShort.State == PositionStateType.Closing)) // позиция уже открыта
                         {
                             _tab.CloseAllOrderToPosition(PositionShort);
-                            Log("Снятие лимитки из-за снижения BigVolume" + PositionShort.State);
+                            Log("Снятие лимитки PositionShort из-за снижения BigVolume" + PositionShort.State);
 
-                            _tab.CloseAtMarket(PositionShort, PositionShort.OpenVolume); // закрываем открытую позицию по рынку
+                            if (!PositionShort.CloseActiv)
+                            {
+                                _tab.CloseAtMarket(PositionShort, PositionShort.OpenVolume); // закрываем открытую позицию по рынку
 
-                            PositionShort = null;
-                            Log("PositionShort 7 = null");
+                                PositionShort = null;
+                                Log("PositionShort 7 = null");
 
-                            Log("Закрытие шортовой позиции по рынку из-за снижения BigVolume");
+                                Log("Закрытие шортовой позиции по рынку из-за снижения BigVolume");
+                            }
+
+                            
                         }
                         else if
                             (PositionShort.State ==
@@ -253,13 +258,18 @@ namespace OsEngine.Robots.FrontRunner.Model
                         if ((PositionLong.State == PositionStateType.Open) || PositionLong.State == PositionStateType.Closing) // позиция уже открыта
                         {
                             _tab.CloseAllOrderToPosition(PositionLong);
-                            Log("Снятие лимитки из-за снижения BigVolume" + PositionLong.State);
+                            Log("Снятие лимитки PositionLong из-за снижения BigVolume" + PositionLong.State);
 
-                            _tab.CloseAtMarket(PositionLong, PositionLong.OpenVolume); // закрываем открытую позицию по рынку
+                            if (!PositionLong.CloseActiv)
+                            {
+                                _tab.CloseAtMarket(PositionLong, PositionLong.OpenVolume); // закрываем открытую позицию по рынку
 
-                            PositionLong = null;
-                            Log("PositionLong 7 = null");
-                            Log("Закрытие лонговой позиции по рынку из-за снижения BigVolume");
+                                PositionLong = null;
+                                Log("PositionLong 7 = null");
+                                Log("Закрытие лонговой позиции по рынку из-за снижения BigVolume");
+                            }
+
+                            
                         }
                         else if
                             (PositionLong.State ==
