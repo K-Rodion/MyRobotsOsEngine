@@ -28,6 +28,7 @@ using OsEngine.Robots.FrontRunner;
 using OsEngine.Robots.FrontRunner.Model;
 using OsEngine.Robots.PriceChanel;
 using OsEngine.Robots.CryptoCluster;
+using OsEngine.Robots.HFT;
 
 namespace OsEngine.Robots
 {
@@ -43,6 +44,7 @@ namespace OsEngine.Robots
         {
             List<string> result = new List<string>();
             result.Add("PriceChanelFix");
+            result.Add("HFTBot");
             result.Add("ClusterBot");
             result.Add("FrontRunnerBot");
             result.Add("VolumeReversalRobot");
@@ -130,6 +132,10 @@ namespace OsEngine.Robots
             if (nameClass == "SmaScreener")
             {
                 bot = new SmaScreener(name, startProgram);
+            }
+            if (nameClass == "HFTBot")
+            {
+                bot = new HFTBot(name, startProgram);
             }
             if (nameClass == "PriceChanelFix")
             {

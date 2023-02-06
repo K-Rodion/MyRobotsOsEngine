@@ -903,6 +903,7 @@
     <Compile Include="Robots\FrontRunner\View\FrontRunnerUI.xaml.cs">
       <DependentUpon>FrontRunnerUI.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Robots\HFT\HFTBot.cs" />
     <Compile Include="Robots\OnScriptIndicators\GridSample.cs" />
     <Compile Include="Robots\Engines\CandleEngine.cs" />
     <Compile Include="Robots\Engines\ClusterEngine.cs" />

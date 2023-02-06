@@ -84,14 +84,14 @@ namespace OsEngine.Robots.CryptoCluster
 
         private void _tabSimple_PositionOpeningSuccesEvent(Position positions)
         {
-            foreach (Position pos in positions)
+            /*foreach (Position pos in positions)
             {
                 if (pos.State == PositionStateType.Open)
                 {
                     _tabSimple.CloseAtStop(pos, _stopPrice, _stopPrice - 100 * _tabSimple.Securiti.PriceStep);
                     _tabSimple.CloseAtProfit(pos, _takePrice, _takePrice);
                 }
-            }
+            }*/
         }
 
         private void _tabSimple_CandleFinishedEvent(List<Candle> candles)
