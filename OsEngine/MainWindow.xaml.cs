@@ -22,6 +22,7 @@ using OsEngine.OsMiner;
 using OsEngine.OsOptimizer;
 using OsEngine.OsTrader.Gui;
 using OsEngine.PrimeSettings;
+using OsEngine.Views;
 
 namespace OsEngine
 {
@@ -98,6 +99,25 @@ namespace OsEngine
 
             this.Activate();
             this.Focus();
+
+
+            this.Hide();
+            StartMyWindow();
+
+            ProccesIsWorked = false;
+
+            this.Close();
+
+            Thread.Sleep(10000);
+
+            Process.GetCurrentProcess().Kill();
+        }
+
+        private void StartMyWindow()
+        {
+            MyRobot robot = new MyRobot();
+
+            robot.ShowDialog();
         }
 
         private void ChangeText()
