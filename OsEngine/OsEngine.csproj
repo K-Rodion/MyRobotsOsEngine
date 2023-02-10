@@ -796,6 +796,7 @@
     <Compile Include="Market\Services\CandlesCreator.cs" />
     <Compile Include="Market\Services\RestChannel.cs" />
     <Compile Include="Market\Services\WsSource.cs" />
+    <Compile Include="MyEntity\Direction.cs" />
     <Compile Include="OsConverter\OsCandleConverterUi.xaml.cs">
       <DependentUpon>OsCandleConverterUi.xaml</DependentUpon>
     </Compile>
@@ -1043,6 +1044,8 @@
       <DependentUpon>WindowVolumeReversalRobot.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\MyRobotVM.cs" />
+    <Compile Include="Views\DecimalTextBox.cs" />
+    <Compile Include="Views\IntTextBox.cs" />
     <Compile Include="Views\MyRobot.xaml.cs">
       <DependentUpon>MyRobot.xaml</DependentUpon>
     </Compile>

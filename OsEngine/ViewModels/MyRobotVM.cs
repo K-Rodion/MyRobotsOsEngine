@@ -12,6 +12,7 @@ using OsEngine.Commands;
 using OsEngine.Entity;
 using OsEngine.Market;
 using OsEngine.Market.Servers;
+using OsEngine.MyEntity;
 using OsEngine.Robots;
 
 namespace OsEngine.ViewModels
@@ -44,6 +45,62 @@ namespace OsEngine.ViewModels
         }
 
         private string _selectedSecurity = "";
+
+        public decimal StartPoint
+        {
+            get => _startPoint;
+
+            set
+            {
+                _startPoint = value;
+                OnPropertyChanged(nameof(StartPoint));
+            }
+        }
+        private decimal _startPoint;
+
+        public int CountLevels
+        {
+            get => _countLevels;
+
+            set
+            {
+                _countLevels = value;
+                OnPropertyChanged(nameof(CountLevels));
+            }
+        }
+        private int _countLevels;
+
+        public Direction Direction
+        {
+            get => _direction;
+
+            set
+            {
+                _direction = value;
+                OnPropertyChanged(nameof(Direction));
+            }
+        }
+        private Direction _direction;
+
+        public List<Direction> Directions { get; set; } = new List<Direction>()
+        {
+            Direction.BUY, Direction.SELL, Direction.BUYSELL
+        };
+
+        public decimal Lot
+        {
+            get => _lot;
+
+            set
+            {
+                _lot = value;
+                OnPropertyChanged(nameof(Lot));
+            }
+        }
+        private decimal _lot;
+
+
+
 
         #endregion
 
