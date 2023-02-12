@@ -99,7 +99,58 @@ namespace OsEngine.ViewModels
         }
         private decimal _lot;
 
+        public StepType StepType
+        {
+            get => _stepType;
 
+            set
+            {
+                _stepType = value;
+                OnPropertyChanged(nameof(StepType));
+            }
+        }
+        private StepType _stepType;
+
+        public List<StepType> StepTypes { get; set; } = new List<StepType>()
+        {
+            StepType.PUNKT, StepType.PERCENT
+        };
+
+        public decimal StepLevel
+        {
+            get => _stepLevel;
+
+            set
+            {
+                _stepLevel = value;
+                OnPropertyChanged(nameof(StepLevel));
+            }
+        }
+        private decimal _stepLevel;
+
+        public decimal TakeLevel
+        {
+            get => _takeLevel;
+
+            set
+            {
+                _takeLevel = value;
+                OnPropertyChanged(nameof(TakeLevel));
+            }
+        }
+        private decimal _takeLevel;
+
+        public int MaxActiveLevel
+        {
+            get => _maxActiveLevel;
+
+            set
+            {
+                _maxActiveLevel = value;
+                OnPropertyChanged(nameof(MaxActiveLevel));
+            }
+        }
+        private int _maxActiveLevel;
 
 
         #endregion

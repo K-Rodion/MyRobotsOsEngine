@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using MahApps.Metro.Controls;
 using OsEngine.Market;
 using OsEngine.Market.Servers;
 using OsEngine.ViewModels;
@@ -20,7 +21,7 @@ namespace OsEngine.Views
     /// <summary>
     /// Логика взаимодействия для MyRobot.xaml
     /// </summary>
-    public partial class MyRobot : Window
+    public partial class MyRobot : MetroWindow
     {
         public MyRobot()
         {
