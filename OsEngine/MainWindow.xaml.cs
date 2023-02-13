@@ -102,7 +102,6 @@ namespace OsEngine
 
 
             this.Hide();
-            StartMyWindow();
 
             ProccesIsWorked = false;
 
@@ -113,12 +112,7 @@ namespace OsEngine
             Process.GetCurrentProcess().Kill();
         }
 
-        private void StartMyWindow()
-        {
-            MyRobot robot = new MyRobot();
-
-            robot.ShowDialog();
-        }
+        
 
         private void ChangeText()
         {

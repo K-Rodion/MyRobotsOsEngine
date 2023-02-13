@@ -30,6 +30,19 @@ namespace OsEngine.ViewModels
 
         public ObservableCollection<string> ListSecurities { get; set; } = new ObservableCollection<string>();
 
+        public string Header
+        {
+            get => _header;
+
+            set
+            {
+                _header = value;
+                OnPropertyChanged(nameof(Header));
+                
+            }
+        }
+        private string _header;
+
         public string SelectedSecurity
         {
             get => _selectedSecurity;
@@ -152,6 +165,68 @@ namespace OsEngine.ViewModels
         }
         private int _maxActiveLevel;
 
+        public decimal AllPositionsCount
+        {
+            get => _allPositionsCount;
+
+            set
+            {
+                _allPositionsCount = value;
+                OnPropertyChanged(nameof(AllPositionsCount));
+            }
+        }
+        private decimal _allPositionsCount;
+
+        public decimal PriceAverage
+        {
+            get => _priceAverage;
+
+            set
+            {
+                _priceAverage = value;
+                OnPropertyChanged(nameof(PriceAverage));
+            }
+        }
+        private decimal _priceAverage;
+
+        public decimal VarMargin
+        {
+            get => _varMargin;
+
+            set
+            {
+                _varMargin = value;
+                OnPropertyChanged(nameof(VarMargin));
+            }
+        }
+        private decimal _varMargin;
+
+        public decimal Accum
+        {
+            get => _accum;
+
+            set
+            {
+                _accum = value;
+                OnPropertyChanged(nameof(Accum));
+            }
+        }
+        private decimal _accum;
+
+        public decimal Total
+        {
+            get => _total;
+
+            set
+            {
+                _total = value;
+                OnPropertyChanged(nameof(Total));
+            }
+        }
+        private decimal _total;
+
+
+
 
         #endregion
 
@@ -167,28 +242,13 @@ namespace OsEngine.ViewModels
 
         #region Commands ==========================================================
 
-        private DelegateCommand commandServersToConnect;
-
-        public DelegateCommand CommandServersToConnect
-        {
-            get
-            {
-                if (commandServersToConnect == null)
-                {
-                    commandServersToConnect = new DelegateCommand(ServersToConnect);
-                }
-                return commandServersToConnect;
-            }
-        }
+        
 
         #endregion
 
         #region Methods ==========================================================
 
-        void ServersToConnect(object obj)
-        {
-            ServerMaster.ShowDialog(false);
-        }
+        
 
         private Security GetSecurityForName(string name)
         {

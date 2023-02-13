@@ -1057,7 +1057,11 @@
     <Compile Include="Robots\VolumeReversal\WindowVolumeReversalRobot.xaml.cs">
       <DependentUpon>WindowVolumeReversalRobot.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RobotWindow.xaml.cs">
+      <DependentUpon>RobotWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\MyRobotVM.cs" />
+    <Compile Include="ViewModels\RobotWindowVM.cs" />
     <Compile Include="Views\DecimalTextBox.cs" />
     <Compile Include="Views\IntTextBox.cs" />
     <Compile Include="Views\MyRobot.xaml.cs">
@@ -1590,6 +1594,10 @@
     <Page Include="Robots\VolumeReversal\WindowVolumeReversalRobot.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RobotWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MyRobot.xaml">
       <SubType>Designer</SubType>
