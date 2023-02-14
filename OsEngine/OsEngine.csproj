@@ -810,6 +810,8 @@
     <Compile Include="Market\Services\RestChannel.cs" />
     <Compile Include="Market\Services\WsSource.cs" />
     <Compile Include="MyEntity\Direction.cs" />
+    <Compile Include="MyEntity\Emitent.cs" />
+    <Compile Include="MyEntity\Exchange.cs" />
     <Compile Include="MyEntity\StepType.cs" />
     <Compile Include="OsConverter\OsCandleConverterUi.xaml.cs">
       <DependentUpon>OsCandleConverterUi.xaml</DependentUpon>
@@ -1060,8 +1062,12 @@
     <Compile Include="RobotWindow.xaml.cs">
       <DependentUpon>RobotWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\ChangeSecurityVM.cs" />
     <Compile Include="ViewModels\MyRobotVM.cs" />
     <Compile Include="ViewModels\RobotWindowVM.cs" />
+    <Compile Include="Views\ChangeSecurityWindow.xaml.cs">
+      <DependentUpon>ChangeSecurityWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DecimalTextBox.cs" />
     <Compile Include="Views\IntTextBox.cs" />
     <Compile Include="Views\MyRobot.xaml.cs">
@@ -1596,6 +1602,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="RobotWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ChangeSecurityWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

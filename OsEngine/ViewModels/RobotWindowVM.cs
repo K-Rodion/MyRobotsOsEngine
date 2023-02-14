@@ -8,6 +8,7 @@ using System.Windows;
 using OsEngine.Commands;
 using OsEngine.Market;
 using OsEngine.Robots;
+using OsEngine.Views;
 
 namespace OsEngine.ViewModels
 {
@@ -22,11 +23,13 @@ namespace OsEngine.ViewModels
 
         public ObservableCollection<MyRobotVM> Robots { get; set; } = new ObservableCollection<MyRobotVM>();
 
+
+
         #endregion
 
         #region Fields ====================================================
 
-
+        public static ChangeSecurityWindow ChangeSecurityWindow = null;
 
         #endregion
 

@@ -14,6 +14,7 @@ using OsEngine.Market;
 using OsEngine.Market.Servers;
 using OsEngine.MyEntity;
 using OsEngine.Robots;
+using OsEngine.Views;
 
 namespace OsEngine.ViewModels
 {
@@ -242,13 +243,40 @@ namespace OsEngine.ViewModels
 
         #region Commands ==========================================================
 
-        
+        private DelegateCommand _commandSelectSecurity;
+
+        public DelegateCommand CommandSelectSecurity
+        {
+            get
+            {
+                if (_commandSelectSecurity == null)
+                {
+                    _commandSelectSecurity = new DelegateCommand(SelectSecurity);
+                }
+
+                return _commandSelectSecurity;
+            }
+        }
 
         #endregion
 
         #region Methods ==========================================================
 
-        
+
+        void SelectSecurity(object o)
+        {
+            if (RobotWindowVM.ChangeSecurityWindow != null)
+            {
+                return;
+            }
+
+            RobotWindowVM.ChangeSecurityWindow = new ChangeSecurityWindow();
+
+            RobotWindowVM.ChangeSecurityWindow.ShowDialog();
+
+            RobotWindowVM.ChangeSecurityWindow = null;
+        }
+
 
         private Security GetSecurityForName(string name)
         {

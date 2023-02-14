@@ -1,0 +1,61 @@
+﻿<Window x:Class="OsEngine.Views.ChangeSecurityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OsEngine.Views"
+        mc:Ignorable="d"
+        Title="ChangeSecurityWindow" Height="600" Width="800">
+    <Grid>
+       <Grid.ColumnDefinitions>
+           <ColumnDefinition Width="300"/>
+           <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions> 
+
+        
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="200"/>
+                <RowDefinition MinHeight="300"/>
+            </Grid.RowDefinitions>
+
+            <GroupBox Header="Exchanges" Margin="2">
+                <ItemsControl ItemsSource="{Binding Exchanges}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Server}"
+                                    Command="{Binding CommandSetExchange,
+                                RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+
+            <GroupBox Header="Classes" Grid.Row="1" Margin="2">
+                <ItemsControl  ItemsSource="{Binding EmitClasses}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding EmitClass}"
+                                    Command="{Binding CommandSetEmitClass}"/>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+
+            
+        </Grid>
+
+        <GroupBox Header="Securities" Grid.Column="1" Margin="2">
+            <DataGrid ItemsSource="{Binding Securities}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding NameSec}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        
+    </Grid>
+</Window>
