@@ -20,11 +20,11 @@ namespace OsEngine.Views
     /// </summary>
     public partial class ChangeSecurityWindow : Window
     {
-        public ChangeSecurityWindow()
+        public ChangeSecurityWindow(MyRobotVM robot)
         {
             InitializeComponent();
 
-            DataContext = new ChangeSecurityVM();
+            DataContext = new ChangeSecurityVM(robot);
         }
     }
 }

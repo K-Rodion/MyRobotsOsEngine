@@ -12,10 +12,10 @@ namespace OsEngine.MyEntity
     {
         public Exchange(ServerType type)
         {
-            Server = type.ToString();
+            Server = type;
         }
 
-        public string Server
+        public ServerType Server
         {
             get => _server;
 
@@ -25,6 +25,6 @@ namespace OsEngine.MyEntity
                 OnPropertyChanged(nameof(Server));
             }
         }
-        private string _server;
+        private ServerType _server;
     }
 }

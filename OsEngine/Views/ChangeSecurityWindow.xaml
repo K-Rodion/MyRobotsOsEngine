@@ -25,8 +25,9 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Content="{Binding Server}"
-                                    Command="{Binding CommandSetExchange,
-                                RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                    Command="{Binding DataContext.CommandSetExchange,
+                                RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding Server}"/>
 
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -34,15 +35,20 @@
             </GroupBox>
 
             <GroupBox Header="Classes" Grid.Row="1" Margin="2">
-                <ItemsControl  ItemsSource="{Binding EmitClasses}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding EmitClass}"
-                                    Command="{Binding CommandSetEmitClass}"/>
 
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <ScrollViewer>
+                    <ItemsControl  ItemsSource="{Binding EmitClasses}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding ClassEmit}"
+                                        Command="{Binding CommandSetEmitClass}"/>
+
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                
             </GroupBox>
 
             

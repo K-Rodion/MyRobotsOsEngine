@@ -12,14 +12,14 @@ namespace OsEngine.MyEntity
     {
         public Emitent(Security security)
         {
-            _security = security;
+            Security = security;
         }
 
         public string NameSec
         {
-            get => _security.Name;
+            get => Security.Name;
         }
 
-        private Security _security;
+        public Security Security;
     }
 }

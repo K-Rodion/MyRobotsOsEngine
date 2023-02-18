@@ -810,6 +810,7 @@
     <Compile Include="Market\Services\RestChannel.cs" />
     <Compile Include="Market\Services\WsSource.cs" />
     <Compile Include="MyEntity\Direction.cs" />
+    <Compile Include="MyEntity\EmitClass.cs" />
     <Compile Include="MyEntity\Emitent.cs" />
     <Compile Include="MyEntity\Exchange.cs" />
     <Compile Include="MyEntity\StepType.cs" />

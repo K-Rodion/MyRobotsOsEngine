@@ -29,22 +29,22 @@ namespace OsEngine.ViewModels
 
         #region Properties ==========================================================
 
-        public ObservableCollection<string> ListSecurities { get; set; } = new ObservableCollection<string>();
 
         public string Header
         {
-            get => _header;
-
-            set
+            get
             {
-                _header = value;
-                OnPropertyChanged(nameof(Header));
-                
-            }
-        }
-        private string _header;
+                if (SelectedSecurity != null)
+                {
+                    return SelectedSecurity.Name;
+                }
 
-        public string SelectedSecurity
+                return "";
+            }
+
+        }
+
+        public Security SelectedSecurity
         {
             get => _selectedSecurity;
 
@@ -52,13 +52,12 @@ namespace OsEngine.ViewModels
             {
                 _selectedSecurity = value;
                 OnPropertyChanged(nameof(SelectedSecurity));
-                _security = GetSecurityForName(_selectedSecurity);
-
-                StartSecurity(_security);
+                OnPropertyChanged(nameof(Header));
+                //StartSecurity(_security);
             }
         }
 
-        private string _selectedSecurity = "";
+        private Security _selectedSecurity;
 
         public decimal StartPoint
         {
@@ -235,10 +234,6 @@ namespace OsEngine.ViewModels
 
         IServer _server;
 
-        private List<Security> _securities = new List<Security>();
-
-        private Security _security;
-
         #endregion
 
         #region Commands ==========================================================
@@ -278,18 +273,6 @@ namespace OsEngine.ViewModels
         }
 
 
-        private Security GetSecurityForName(string name)
-        {
-            for (int i = 0; i < _securities.Count; i++)
-            {
-                if (_securities[i].Name == name)
-                {
-                    return _securities[i];
-                }
-            }
-
-            return null;
-        }
 
         private void StartSecurity(Security security)
         {
@@ -328,7 +311,6 @@ namespace OsEngine.ViewModels
             _server = newServer; //если нет добавляем в список
 
             _server.PortfoliosChangeEvent += NewServer_PortfoliosChangeEvent; ;//событие на обновление счета
-            _server.SecuritiesChangeEvent += NewServer_SecuritiesChangeEvent; ;//событие на обновление бумаг с биржи
             _server.NeadToReconnectEvent += NewServer_NeadToReconnectEvent;//событие на перезаказ данных с сервера
             _server.NewMarketDepthEvent += NewServer_NewMarketDepthEvent;//подписка на обновление стакана
             _server.NewTradeEvent += NewServer_NewTradeEvent;//подписка на обезличенные сделки
@@ -342,21 +324,6 @@ namespace OsEngine.ViewModels
             
         }
 
-        private void NewServer_SecuritiesChangeEvent(List<Security> securities)
-        {
-
-            ObservableCollection<string> listSecurities = new ObservableCollection<string>();
-
-            for (int i = 0; i < securities.Count; i++)
-            {
-                listSecurities.Add(securities[i].Name);
-            }
-
-            ListSecurities = listSecurities;
-            OnPropertyChanged(nameof(ListSecurities));
-
-            _securities = securities;
-        }
 
         private void NewServer_PortfoliosChangeEvent(List<Portfolio> portfolios)
         {
