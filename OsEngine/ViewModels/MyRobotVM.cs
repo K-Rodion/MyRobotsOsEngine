@@ -38,11 +38,20 @@ namespace OsEngine.ViewModels
                 {
                     return SelectedSecurity.Name;
                 }
+                else
+                {
+                    return _header;
+                }
+            }
 
-                return "";
+            set
+            {
+                _header = value;
+                OnPropertyChanged(nameof(Header));
             }
 
         }
+        private string _header;
 
         public Security SelectedSecurity
         {
@@ -57,7 +66,7 @@ namespace OsEngine.ViewModels
             }
         }
 
-        private Security _selectedSecurity;
+        private Security _selectedSecurity = null;
 
         public decimal StartPoint
         {
@@ -265,7 +274,7 @@ namespace OsEngine.ViewModels
                 return;
             }
 
-            RobotWindowVM.ChangeSecurityWindow = new ChangeSecurityWindow();
+            RobotWindowVM.ChangeSecurityWindow = new ChangeSecurityWindow(this);
 
             RobotWindowVM.ChangeSecurityWindow.ShowDialog();
 

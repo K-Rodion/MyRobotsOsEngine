@@ -41,7 +41,9 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Content="{Binding ClassEmit}"
-                                        Command="{Binding CommandSetEmitClass}"/>
+                                        Command="{Binding DataContext.CommandSetEmitClass,
+                                RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding ClassEmit}"/>
 
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -55,7 +57,8 @@
         </Grid>
 
         <GroupBox Header="Securities" Grid.Column="1" Margin="2">
-            <DataGrid ItemsSource="{Binding Securities}">
+            <DataGrid ItemsSource="{Binding Securities}"
+                      SelectedItem="{Binding SelectedEmitent}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding NameSec}"/>
                 </DataGrid.Columns>

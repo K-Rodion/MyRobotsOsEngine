@@ -10,13 +10,16 @@ using OsEngine.Market;
 using OsEngine.Market.Servers;
 using OsEngine.MyEntity;
 using OsEngine.Robots;
+using OsEngine.Views;
 
 namespace OsEngine.ViewModels
 {
     public class ChangeSecurityVM:BaseVM
     {
-        public ChangeSecurityVM()
+        public ChangeSecurityVM(MyRobotVM robot)
         {
+            _robot = robot;
+
             Init();
         }
 
@@ -28,11 +31,25 @@ namespace OsEngine.ViewModels
 
         public ObservableCollection<Emitent> Securities { get; set; } = new ObservableCollection<Emitent>();
 
+        public Emitent SelectedEmitent
+        {
+            get => _selectedEmitent;
+
+            set
+            {
+                _selectedEmitent = value;
+                OnPropertyChanged(nameof(SelectedEmitent));
+            }
+        }
+        private Emitent _selectedEmitent;
+
         #endregion
 
         #region Fields ==============================================================================================
 
         Dictionary<string, List<Security>> _classes = new Dictionary<string, List<Security>>();
+
+        private MyRobotVM _robot;
 
         #endregion
 
@@ -52,10 +69,41 @@ namespace OsEngine.ViewModels
             }
         }
 
+        private DelegateCommand _commandSetEmitClass;
+
+        public DelegateCommand CommandSetEmitClass
+        {
+            get
+            {
+                if (_commandSetEmitClass == null)
+                {
+                    _commandSetEmitClass = new DelegateCommand(SetEmitClass);
+                }
+                return _commandSetEmitClass;
+            }
+        }
+
 
         #endregion
 
         #region Methods ============================================================================================
+
+        void SetEmitClass(object obj)
+        {
+            string classEmit = (string)obj;
+
+            List<Security> secsList = _classes[classEmit];
+
+            ObservableCollection<Emitent> emits = new ObservableCollection<Emitent>();
+
+            foreach (Security sec in secsList)
+            {
+                emits.Add(new Emitent(sec));
+            }
+
+            Securities = emits;
+            OnPropertyChanged(nameof(Securities));
+        }
 
         void Init()
         {
