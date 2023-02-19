@@ -29,6 +29,7 @@ using OsEngine.Robots.FrontRunner.Model;
 using OsEngine.Robots.PriceChanel;
 using OsEngine.Robots.CryptoCluster;
 using OsEngine.Robots.HFT;
+using OsEngine.Robots.Arbitrager.Model;
 
 namespace OsEngine.Robots
 {
@@ -44,6 +45,7 @@ namespace OsEngine.Robots
         {
             List<string> result = new List<string>();
             result.Add("PriceChanelFix");
+            result.Add("ArbitragerBot");
             result.Add("HFTBot");
             result.Add("ClusterBot");
             result.Add("FrontRunnerBot");
@@ -132,6 +134,10 @@ namespace OsEngine.Robots
             if (nameClass == "SmaScreener")
             {
                 bot = new SmaScreener(name, startProgram);
+            }
+            if (nameClass == "ArbitragerBot")
+            {
+                bot = new ArbitragerBot(name, startProgram);
             }
             if (nameClass == "HFTBot")
             {
