@@ -57,12 +57,31 @@
         </Grid>
 
         <GroupBox Header="Securities" Grid.Column="1" Margin="2">
-            <DataGrid ItemsSource="{Binding Securities}"
-                      SelectedItem="{Binding SelectedEmitent}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding NameSec}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Selected security: " Height="25"/>
+                    <TextBlock Text="{Binding SelectedEmitent.NameSec, Mode=OneWay}"
+                               Width="100" Height="25" Margin="5, 2"/>
+                    <Button Content="Change" Command="{Binding CommandChange}"/>
+                </StackPanel>
+                <GridSplitter Grid.Row="1"></GridSplitter>
+                <DataGrid Grid.Row="2"  
+                          ItemsSource="{Binding Securities}"
+                          SelectedItem="{Binding SelectedEmitent}"
+                          Margin="10">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding NameSec, Mode=OneWay}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+            
         </GroupBox>
 
         

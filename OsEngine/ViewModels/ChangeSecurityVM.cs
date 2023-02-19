@@ -83,10 +83,31 @@ namespace OsEngine.ViewModels
             }
         }
 
+        private DelegateCommand _commandChange;
+
+        public DelegateCommand CommandChange
+        {
+            get
+            {
+                if (_commandChange == null)
+                {
+                    _commandChange = new DelegateCommand(Change);
+                }
+                return _commandChange;
+            }
+        }
 
         #endregion
 
         #region Methods ============================================================================================
+
+        void Change(object obj)
+        {
+            if (SelectedEmitent != null && SelectedEmitent.Security != null)
+            {
+                _robot.SelectedSecurity = SelectedEmitent.Security;
+            }
+        }
 
         void SetEmitClass(object obj)
         {
