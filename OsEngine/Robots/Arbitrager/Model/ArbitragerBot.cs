@@ -5,6 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using OsEngine.Entity;
 using OsEngine.OsTrader.Panels;
+using OsEngine.OsTrader.Panels.Tab;
+using OsEngine.Robots.Arbitrager.View;
+using OsEngine.Robots.Arbitrager.ViewModel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static OsEngine.Robots.Arbitrager.ViewModel.VM;
 
 namespace OsEngine.Robots.Arbitrager.Model
 {
@@ -15,8 +20,66 @@ namespace OsEngine.Robots.Arbitrager.Model
             TabCreate(BotTabType.Simple);
 
             TabCreate(BotTabType.Simple);
+
+            _spot = TabsSimple[0];
+
+            _fut = TabsSimple[1];
+
+            _fut.MarketDepthUpdateEvent += _fut_MarketDepthUpdateEvent;
+
         }
 
+        
+
+        #region Fields========================================================================
+
+        public decimal Spread = -500;
+
+        public decimal Take = 50;
+
+        public decimal Lot = 1;
+
+        public Position Position = null;
+
+        private BotTabSimple _spot;
+
+        private BotTabSimple _fut;
+
+        #endregion
+
+        #region Properties ===================================================================
+
+        public Edit EDIT
+        {
+            get => _edit;
+
+            set
+            {
+                _edit = value;
+            }
+        }
+
+        private Edit _edit;
+
+        #endregion
+
+
+        #region Methods ======================================================================
+
+        private void _fut_MarketDepthUpdateEvent(MarketDepth marketDepth)
+        {
+            if (marketDepth.SecurityNameCode != _fut.Securiti.Name)
+            {
+                return;
+            }
+
+            if (EDIT == Edit.Stop)
+            {
+                return;
+            }
+
+
+        }
         public override string GetNameStrategyType()
         {
             return nameof(ArbitragerBot);
@@ -24,7 +87,13 @@ namespace OsEngine.Robots.Arbitrager.Model
 
         public override void ShowIndividualSettingsDialog()
         {
-            
+            ArbitragerUI window = new ArbitragerUI(this);
+
+            window.Show();
         }
+
+        #endregion
+
+
     }
 }
