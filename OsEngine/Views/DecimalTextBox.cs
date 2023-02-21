@@ -24,7 +24,7 @@ namespace OsEngine.Views
 
         private void DecimalTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            if (!Char.IsDigit(e.Text, 0) && !e.Text.Contains("."))
+            if (!Char.IsDigit(e.Text, 0) && !e.Text.Contains(".") && !e.Text.Contains("-"))
             {
                 e.Handled = true;
             }
