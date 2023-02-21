@@ -27,9 +27,13 @@ namespace OsEngine.Robots.Arbitrager.Model
 
             _fut.MarketDepthUpdateEvent += _fut_MarketDepthUpdateEvent;
 
+            _spot.MarketDepthUpdateEvent += _spot_MarketDepthUpdateEvent;
+
         }
 
         
+
+
 
         #region Fields========================================================================
 
@@ -66,9 +70,14 @@ namespace OsEngine.Robots.Arbitrager.Model
 
         #region Methods ======================================================================
 
-        private void _fut_MarketDepthUpdateEvent(MarketDepth marketDepth)
+        public void _spot_MarketDepthUpdateEvent(MarketDepth marketDepthSpot)
         {
-            if (marketDepth.SecurityNameCode != _fut.Securiti.Name)
+            
+        }
+
+        public void _fut_MarketDepthUpdateEvent(MarketDepth marketDepthFut)
+        {
+            if (marketDepthFut.SecurityNameCode != _fut.Securiti.Name)
             {
                 return;
             }
@@ -78,6 +87,10 @@ namespace OsEngine.Robots.Arbitrager.Model
                 return;
             }
 
+            if (Position == null)
+            {
+                
+            }
 
         }
         public override string GetNameStrategyType()
