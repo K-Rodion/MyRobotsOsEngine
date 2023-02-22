@@ -45,9 +45,15 @@ namespace OsEngine.Robots.Arbitrager.Model
 
         public Position Position = null;
 
+        public List<Position> Positions = new List<Position>();
+
         private BotTabSimple _spot;
 
         private BotTabSimple _fut;
+
+        private MarketDepth _marketDepthSpot;
+
+        private decimal _openPrice = 0;
 
         #endregion
 
@@ -63,7 +69,7 @@ namespace OsEngine.Robots.Arbitrager.Model
             }
         }
 
-        private Edit _edit;
+        private Edit _edit = VM.Edit.Stop;
 
         #endregion
 
@@ -72,7 +78,7 @@ namespace OsEngine.Robots.Arbitrager.Model
 
         public void _spot_MarketDepthUpdateEvent(MarketDepth marketDepthSpot)
         {
-            
+            _marketDepthSpot = marketDepthSpot.GetCopy();
         }
 
         public void _fut_MarketDepthUpdateEvent(MarketDepth marketDepthFut)
@@ -87,9 +93,26 @@ namespace OsEngine.Robots.Arbitrager.Model
                 return;
             }
 
-            if (Position == null)
+            
+            if (Position == null&& _marketDepthSpot != null && ((marketDepthFut.Asks[0].Price - _marketDepthSpot.Bids[0].Price * 1000) < Spread))
             {
+                Position = _spot.SellAtMarket(Lot);
+
+                Positions.Add(Position);
+
+                Position = _fut.BuyAtMarket(Lot);
+
+                Positions.Add(Position);
                 
+                _openPrice = _fut.GetJournal().LastPosition.EntryPrice - _spot.GetJournal().LastPosition.EntryPrice * 1000;
+            }
+
+            if (Position != null && _marketDepthSpot != null && ((marketDepthFut.Bids[0].Price - _marketDepthSpot.Asks[0].Price * 1000) > (Take + _openPrice)))
+            {
+                _spot.BuyAtMarket(Lot);
+                _fut.SellAtMarket(Lot);
+
+                Position = null;
             }
 
         }
