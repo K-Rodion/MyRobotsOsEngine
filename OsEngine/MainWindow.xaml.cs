@@ -38,7 +38,7 @@ namespace OsEngine
 
         public static Dispatcher GetDispatcher
         {
-            get { return _window.Dispatcher; }
+            get { return RobotWindow.Dispatcher; }
         }
 
         /// <summary>

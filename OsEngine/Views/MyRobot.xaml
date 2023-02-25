@@ -27,8 +27,8 @@
             <TextBlock Text="{Binding ServerType}"/>
             <TextBlock Text="{Binding ServerState}"/>
             <TextBlock Text="Portfolio"/>
-            <ComboBox ItemsSource="{Binding Portfolios}"
-                      SelectedItem="{Binding Portfolio}"/>
+            <ComboBox ItemsSource="{Binding StringPortfolios}"
+                      SelectedItem="{Binding StringPortfolio}"/>
             <TextBlock Text="Paper"/>
             <Button Content="Select Security"
                 Command="{Binding CommandSelectSecurity}"/>
@@ -41,7 +41,7 @@
             </Grid.ColumnDefinitions>
 
             <GroupBox Header="Parameters" Width="300" HorizontalAlignment="Left"
-                      Height="280" VerticalAlignment="Top" Grid.Column="0">
+                      Height="280" VerticalAlignment="Top" Grid.Column="0" Margin="2">
                 <UniformGrid Columns="2">
                     <TextBlock Text="Start point: "/>
                     <local:DecimalTextBox Text="{Binding StartPoint}"/>
@@ -66,7 +66,7 @@
             </GroupBox>
 
             <GroupBox Grid.Column="1" Header="Position"
-                      Height="200" VerticalAlignment="Top">
+                      Height="200" VerticalAlignment="Top" Margin="2">
                 <UniformGrid Columns="2">
                     <TextBlock Text="All positions"/>
                     <TextBlock Text="{Binding AllPositionsCount}"/>

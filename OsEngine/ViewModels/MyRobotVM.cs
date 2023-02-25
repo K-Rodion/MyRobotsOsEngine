@@ -80,6 +80,51 @@ namespace OsEngine.ViewModels
         }
         private decimal _startPoint;
 
+        public ServerType ServerType
+        {
+            get
+            {
+                if (Server == null)
+                {
+                    return ServerType.None;
+                }
+                return Server.ServerType;
+            }
+
+        }
+
+        public IServer Server
+        {
+            get => _server;
+
+            set
+            {
+                _server = value;
+                OnPropertyChanged(nameof(ServerType));
+                StringPortfolios = GetStringPortfolios(_server);
+                if (StringPortfolios != null && StringPortfolios.Count>0)
+                {
+                    StringPortfolio = StringPortfolios[0];
+                }
+                OnPropertyChanged(nameof(StringPortfolios));
+            }
+        }
+        private IServer _server;
+
+        public string StringPortfolio
+        {
+            get => _stringPortfolio;
+
+            set
+            {
+                _stringPortfolio = value;
+                OnPropertyChanged(nameof(StringPortfolio));
+
+                _portfolio = GetPortfolio(_stringPortfolio);
+            }
+        }
+        private string _stringPortfolio;
+
         public int CountLevels
         {
             get => _countLevels;
@@ -241,7 +286,9 @@ namespace OsEngine.ViewModels
 
         #region Fields ==========================================================
 
-        IServer _server;
+        public ObservableCollection<string> StringPortfolios { get; set; } = new ObservableCollection<string>();
+
+        private Portfolio _portfolio;
 
         #endregion
 
@@ -266,6 +313,39 @@ namespace OsEngine.ViewModels
 
         #region Methods ==========================================================
 
+        private Portfolio GetPortfolio(string number)
+        {
+            if (Server != null)
+            {
+                foreach (var portf in Server.Portfolios)
+                {
+                    if (portf.Number == number)
+                    {
+                        return portf;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private ObservableCollection<string> GetStringPortfolios(IServer server)
+        {
+
+            ObservableCollection<string> stringportfolios = new ObservableCollection<string>();
+
+
+            if (server == null)
+            {
+                return stringportfolios;
+            }
+
+            foreach (var portf in server.Portfolios)
+            {
+                stringportfolios.Add(portf.Number);
+            }
+
+            return stringportfolios;
+        }
 
         void SelectSecurity(object o)
         {
@@ -295,7 +375,7 @@ namespace OsEngine.ViewModels
             {
                 while (true)
                 {
-                    var series = _server.StartThisSecurity(security.Name, new TimeFrameBuilder(), security.NameClass);
+                    var series = Server.StartThisSecurity(security.Name, new TimeFrameBuilder(), security.NameClass);
 
                     if (series != null)
                     {
@@ -310,22 +390,28 @@ namespace OsEngine.ViewModels
 
         private void ServerMaster_ServerCreateEvent(IServer newServer)
         {
-            if (newServer == _server)
+            if (newServer == Server)
             {
                 return;
             }
 
 
 
-            _server = newServer; //если нет добавляем в список
+            Server = newServer; //если нет добавляем в список
 
-            _server.PortfoliosChangeEvent += NewServer_PortfoliosChangeEvent; ;//событие на обновление счета
-            _server.NeadToReconnectEvent += NewServer_NeadToReconnectEvent;//событие на перезаказ данных с сервера
-            _server.NewMarketDepthEvent += NewServer_NewMarketDepthEvent;//подписка на обновление стакана
-            _server.NewTradeEvent += NewServer_NewTradeEvent;//подписка на обезличенные сделки
-            _server.NewOrderIncomeEvent += NewServer_NewOrderIncomeEvent;//изменение ордера
-            _server.NewMyTradeEvent += NewServer_NewMyTradeEvent;//произошла моя сделка
-            _server.ConnectStatusChangeEvent += NewServer_ConnectStatusChangeEvent;//изменение статуса соединения
+            Server.PortfoliosChangeEvent += NewServer_PortfoliosChangeEvent; ;//событие на обновление счета
+            Server.NeadToReconnectEvent += NewServer_NeadToReconnectEvent;//событие на перезаказ данных с сервера
+            Server.NewMarketDepthEvent += NewServer_NewMarketDepthEvent;//подписка на обновление стакана
+            Server.NewTradeEvent += NewServer_NewTradeEvent;//подписка на обезличенные сделки
+            Server.NewOrderIncomeEvent += NewServer_NewOrderIncomeEvent;//изменение ордера
+            Server.NewMyTradeEvent += NewServer_NewMyTradeEvent;//произошла моя сделка
+            Server.ConnectStatusChangeEvent += NewServer_ConnectStatusChangeEvent;//изменение статуса соединения
+            Server.NeadToReconnectEvent += _server_NeadToReconnectEvent;
+        }
+
+        private void _server_NeadToReconnectEvent()
+        {
+            
         }
 
         private void NewServer_ConnectStatusChangeEvent(string obj)

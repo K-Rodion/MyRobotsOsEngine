@@ -51,6 +51,8 @@ namespace OsEngine.ViewModels
 
         private MyRobotVM _robot;
 
+        private IServer _server = null;
+
         #endregion
 
         #region Commands ============================================================================================
@@ -106,6 +108,8 @@ namespace OsEngine.ViewModels
             if (SelectedEmitent != null && SelectedEmitent.Security != null)
             {
                 _robot.SelectedSecurity = SelectedEmitent.Security;
+
+                _robot.Server = _server;
             }
         }
 
@@ -153,6 +157,7 @@ namespace OsEngine.ViewModels
                 if (server.ServerType == type)
                 {
                     securities = server.Securities;
+                    _server = server;
                     break;
                 }
             }

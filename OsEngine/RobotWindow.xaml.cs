@@ -33,7 +33,7 @@ namespace OsEngine
 
             InitializeComponent();
 
-            ProccesIsWorked = true;
+            MainWindow.ProccesIsWorked = true;
             _window = this;
 
             ServerMaster.ActivateLogging();
@@ -45,7 +45,7 @@ namespace OsEngine
 
         private void RobotWindow_Closed(object sender, EventArgs e)
         {
-            ProccesIsWorked = false;
+            MainWindow.ProccesIsWorked = false;
 
             Thread.Sleep(10000);
 
@@ -53,15 +53,13 @@ namespace OsEngine
         }
 
         private static RobotWindow _window;
-        public static Dispatcher GetDispatcher
-        {
-            get { return _window.Dispatcher; }
-        }
 
-        /// <summary>
-        ///  is application running
-        /// работает ли приложение или закрывается
-        /// </summary>
-        public static bool ProccesIsWorked;
+        public static Dispatcher Dispatcher;
+
+
+        private void UIElement_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
     }
 }
