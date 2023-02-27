@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OsEngine.Charts.CandleChart.Indicators;
+using OsEngine.Entity;
 using OsEngine.Robots;
 
 namespace OsEngine.MyEntity
@@ -25,6 +26,18 @@ namespace OsEngine.MyEntity
             }
         }
         private decimal _priceLevel = 0;
+
+        public Side Side
+        {
+            get => _side;
+
+            set
+            {
+                _side = value;
+                OnPropertyChanged(nameof(Side));
+            }
+        }
+        private Side _side;
 
         /// <summary>
         /// Реальная цена открытой позиции

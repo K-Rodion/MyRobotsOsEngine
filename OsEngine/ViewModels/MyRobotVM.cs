@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
 using OkonkwoOandaV20;
+using OkonkwoOandaV20.TradeLibrary.DataTypes.Pricing;
 using OsEngine.Commands;
 using OsEngine.Entity;
 using OsEngine.Market;
@@ -22,13 +23,16 @@ namespace OsEngine.ViewModels
     {
         public MyRobotVM()
         {
-            ServerMaster.ServerCreateEvent += ServerMaster_ServerCreateEvent;
+            
         }
 
-        
+
 
         #region Properties ==========================================================
 
+        public ObservableCollection<string> StringPortfolios { get; set; } = new ObservableCollection<string>();
+
+        public ObservableCollection<Level> Levels { get; set; } = new ObservableCollection<Level>();
 
         public string Header
         {
@@ -62,7 +66,12 @@ namespace OsEngine.ViewModels
                 _selectedSecurity = value;
                 OnPropertyChanged(nameof(SelectedSecurity));
                 OnPropertyChanged(nameof(Header));
-                //StartSecurity(_security);
+
+                if (SelectedSecurity != null)
+                {
+                    StartSecurity(SelectedSecurity);
+                }
+                
             }
         }
 
@@ -101,6 +110,8 @@ namespace OsEngine.ViewModels
             {
                 _server = value;
                 OnPropertyChanged(nameof(ServerType));
+                SubscribeToServer();
+
                 StringPortfolios = GetStringPortfolios(_server);
                 if (StringPortfolios != null && StringPortfolios.Count>0)
                 {
@@ -109,7 +120,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(StringPortfolios));
             }
         }
-        private IServer _server;
+        private IServer _server = null;
 
         public string StringPortfolio
         {
@@ -165,6 +176,18 @@ namespace OsEngine.ViewModels
             }
         }
         private decimal _lot;
+
+        public bool IsRun
+        {
+            get => _isRun;
+
+            set
+            {
+                _isRun = value;
+                OnPropertyChanged(nameof(IsRun));
+            }
+        }
+        private bool _isRun;
 
         public StepType StepType
         {
@@ -243,6 +266,18 @@ namespace OsEngine.ViewModels
         }
         private decimal _priceAverage;
 
+        public decimal Price
+        {
+            get => _price;
+
+            set
+            {
+                _price = value;
+                OnPropertyChanged(nameof(Price));
+            }
+        }
+        private decimal _price;
+
         public decimal VarMargin
         {
             get => _varMargin;
@@ -286,7 +321,7 @@ namespace OsEngine.ViewModels
 
         #region Fields ==========================================================
 
-        public ObservableCollection<string> StringPortfolios { get; set; } = new ObservableCollection<string>();
+        
 
         private Portfolio _portfolio;
 
@@ -294,8 +329,36 @@ namespace OsEngine.ViewModels
 
         #region Commands ==========================================================
 
-        private DelegateCommand _commandSelectSecurity;
+        private DelegateCommand _commandStartStop;
+        public DelegateCommand CommandStartStop
+        {
+            get
+            {
+                if (_commandStartStop == null)
+                {
+                    _commandStartStop = new DelegateCommand(StartStop);
+                }
 
+                return _commandStartStop;
+            }
+        }
+
+
+        private DelegateCommand _commandCalculate;
+        public DelegateCommand CommandCalculate
+        {
+            get
+            {
+                if (_commandCalculate == null)
+                {
+                    _commandCalculate = new DelegateCommand(Calculate);
+                }
+
+                return _commandCalculate;
+            }
+        }
+
+        private DelegateCommand _commandSelectSecurity;
         public DelegateCommand CommandSelectSecurity
         {
             get
@@ -312,6 +375,152 @@ namespace OsEngine.ViewModels
         #endregion
 
         #region Methods ==========================================================
+
+        private void TradeLogic()
+        {
+            if (IsRun == false)
+            {
+                return;
+            }
+
+            decimal stepLevel = 0;
+
+            if (StepType == StepType.PUNKT)
+            {
+                stepLevel = StepLevel * SelectedSecurity.PriceStep;
+            }
+            else if (StepType == StepType.PERCENT)
+            {
+                stepLevel = StepLevel * Price / 100;
+
+                stepLevel = Decimal.Round(stepLevel, SelectedSecurity.Decimals);
+            }
+
+            decimal borderUp = Price + stepLevel * MaxActiveLevel;
+
+            decimal borderDown = Price - stepLevel * MaxActiveLevel;
+
+            foreach (Level level in Levels)
+            {
+                if (level.PassVolume && level.PriceLevel != 0
+                    && Math.Abs(level.Volume) + level.LimitVolume < Lot)
+                {
+                    if (level.Side == Side.Sell && level.PriceLevel <= borderUp)
+                    {
+
+                    }
+                    else if (level.Side == Side.Buy && level.PriceLevel >= borderDown)
+                    {
+
+                    }
+                }
+
+                
+            }
+        }
+
+        private void SendOrder(decimal price, decimal volume, Side side)
+        {
+
+        }
+
+        private void StartStop(object o)
+        {
+            IsRun = !IsRun;
+        }
+
+        private void SubscribeToServer()
+        {
+            if (Server != null)
+            {
+                UnSubscribeToServer();
+            }
+
+            Server.NewMyTradeEvent += Server_NewMyTradeEvent;//пришла новая сделка
+            Server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;//изменение ордера
+            Server.NewCandleIncomeEvent += Server_NewCandleIncomeEvent;//пришла новая свеча
+            Server.NewTradeEvent += Server_NewTradeEvent;//пришла новая обезличенная сделка
+        }
+
+        private void UnSubscribeToServer()
+        {
+            Server.NewMyTradeEvent -= Server_NewMyTradeEvent;//пришла новая сделка
+            Server.NewOrderIncomeEvent -= Server_NewOrderIncomeEvent;//изменение ордера
+            Server.NewCandleIncomeEvent -= Server_NewCandleIncomeEvent;//пришла новая свеча
+            Server.NewTradeEvent -= Server_NewTradeEvent;//пришла новая обезличенная сделка
+        }
+
+        private void Server_NewTradeEvent(List<Trade> trades)
+        {
+            Price = trades.Last().Price;
+        }
+
+        private void Server_NewCandleIncomeEvent(CandleSeries series)
+        {
+            
+        }
+
+        private void Server_NewOrderIncomeEvent(Order order)
+        {
+            
+        }
+
+        private void Server_NewMyTradeEvent(MyTrade myTrade)
+        {
+            
+        }
+
+        private void Calculate(object o)
+        {
+            ObservableCollection<Level> levels = new ObservableCollection<Level>();
+
+            if (CountLevels <= 0)
+            {
+                return;
+            }
+
+            decimal currBuyPrice = StartPoint;
+
+            decimal currSellPrice = StartPoint;
+
+            for (int i = 0; i < CountLevels; i++)
+            {
+                Level levelBuy = new Level() {Side = Side.Buy};
+                Level levelSell = new Level(){Side = Side.Sell};
+
+                if (StepType == StepType.PUNKT)
+                {
+                    currBuyPrice -= StepLevel * SelectedSecurity.PriceStep;
+                    currSellPrice += StepLevel * SelectedSecurity.PriceStep;
+                }
+                else if (StepType == StepType.PERCENT)
+                {
+                    currBuyPrice -= StepLevel * currBuyPrice / 100;
+                    currBuyPrice = Decimal.Round(currBuyPrice, SelectedSecurity.Decimals);
+
+                    currSellPrice += StepLevel * currSellPrice / 100;
+                    currSellPrice = Decimal.Round(currSellPrice, SelectedSecurity.Decimals);
+                }
+
+                levelBuy.PriceLevel = currBuyPrice;
+                levelSell.PriceLevel = currSellPrice;
+
+                if (Direction == Direction.BUY || Direction == Direction.BUYSELL)
+                {
+                    levels.Add(levelBuy);
+                }
+
+                if (Direction == Direction.SELL || Direction == Direction.BUYSELL)
+                {
+                    levels.Insert(0, levelSell);
+                }
+                
+                
+            }
+
+            Levels = levels;
+            OnPropertyChanged(nameof(Levels));
+        }
 
         private Portfolio GetPortfolio(string number)
         {
@@ -388,67 +597,7 @@ namespace OsEngine.ViewModels
 
         }
 
-        private void ServerMaster_ServerCreateEvent(IServer newServer)
-        {
-            if (newServer == Server)
-            {
-                return;
-            }
-
-
-
-            Server = newServer; //если нет добавляем в список
-
-            Server.PortfoliosChangeEvent += NewServer_PortfoliosChangeEvent; ;//событие на обновление счета
-            Server.NeadToReconnectEvent += NewServer_NeadToReconnectEvent;//событие на перезаказ данных с сервера
-            Server.NewMarketDepthEvent += NewServer_NewMarketDepthEvent;//подписка на обновление стакана
-            Server.NewTradeEvent += NewServer_NewTradeEvent;//подписка на обезличенные сделки
-            Server.NewOrderIncomeEvent += NewServer_NewOrderIncomeEvent;//изменение ордера
-            Server.NewMyTradeEvent += NewServer_NewMyTradeEvent;//произошла моя сделка
-            Server.ConnectStatusChangeEvent += NewServer_ConnectStatusChangeEvent;//изменение статуса соединения
-            Server.NeadToReconnectEvent += _server_NeadToReconnectEvent;
-        }
-
-        private void _server_NeadToReconnectEvent()
-        {
-            
-        }
-
-        private void NewServer_ConnectStatusChangeEvent(string obj)
-        {
-            
-        }
-
-
-        private void NewServer_PortfoliosChangeEvent(List<Portfolio> portfolios)
-        {
-            
-        }
-
-        private void NewServer_NewMyTradeEvent(MyTrade myTrade)
-        {
-
-        }
-
-        private void NewServer_NewOrderIncomeEvent(Order order)
-        {
-
-        }
-
-        private void NewServer_NewTradeEvent(List<Trade> trades)
-        {
-
-        }
-
-        private void NewServer_NewMarketDepthEvent(MarketDepth marketDepth)
-        {
-
-        }
-
-        private void NewServer_NeadToReconnectEvent()
-        {
-            
-        }
+        
 
         #endregion
     }
