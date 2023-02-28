@@ -31,6 +31,8 @@ namespace OsEngine
             Process ps = Process.GetCurrentProcess();
             ps.PriorityClass = ProcessPriorityClass.RealTime;
 
+            Dispatcher = Dispatcher.CurrentDispatcher;
+
             InitializeComponent();
 
             MainWindow.ProccesIsWorked = true;

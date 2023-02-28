@@ -18,6 +18,8 @@
                         Command="{Binding CommandServersToConnect}"/>
                 <Button Content="Add security"
                         Command="{Binding CommandAddEmitent}"/>
+                <TextBlock Text="{Binding StateTg}" Margin="10,7"/>
+                <TextBlock Text="{Binding MessageTg}" Margin="10,7"/>
             </StackPanel>
             
         </mah:WindowCommands>

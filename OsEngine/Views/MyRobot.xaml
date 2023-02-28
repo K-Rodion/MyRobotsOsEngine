@@ -29,15 +29,16 @@
 
         <StackPanel Orientation="Horizontal">
 
-            <TextBlock Text="{Binding ServerType}"/>
+            <TextBlock Text="{Binding ServerType}" FontSize="16"/>
             <TextBlock Text="{Binding ServerState}"/>
-            <TextBlock Text="Portfolio"/>
+            <TextBlock Text="Portfolio" FontSize="16"/>
             <ComboBox ItemsSource="{Binding StringPortfolios}"
-                      SelectedItem="{Binding StringPortfolio}"/>
-            <TextBlock Text="Paper"/>
+                      SelectedItem="{Binding StringPortfolio}"
+                      FontSize="16"/>
+            <TextBlock Text="Security" Margin="5,2" FontSize="16"/>
             <Button Content="Select Security"
                 Command="{Binding CommandSelectSecurity}"/>
-            <TextBlock Text="{Binding Price}"></TextBlock>
+            <TextBlock Text="{Binding Price}" Margin="10,5,0,0" FontSize="16"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -58,7 +59,11 @@
                         <ComboBox ItemsSource="{Binding Directions}"
                               SelectedItem="{Binding Direction}"/>
                         <TextBlock Text="Lot in level"/>
-                        <local:DecimalTextBox Text="{Binding Lot}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <local:DecimalTextBox Text="{Binding Lot}" MinWidth="80"/>
+                            <CheckBox Content="$" IsChecked="{Binding IsChekCurrency}"
+                                      Margin="5,0"/>
+                        </StackPanel>
                         <TextBlock Text="Step type"/>
                         <ComboBox ItemsSource="{Binding StepTypes}"
                               SelectedItem="{Binding StepType}"/>
@@ -68,8 +73,24 @@
                         <local:DecimalTextBox Text="{Binding TakeLevel}"/>
                         <TextBlock Text="Max active level"/>
                         <local:IntTextBox Text="{Binding MaxActiveLevel}"/>
-                        <TextBlock Text=""/>
-                        <Button Content="Calculate" Command="{Binding CommandCalculate}"/>
+                        <Button Content="Close positions" Command="{Binding CommandClosePositions}"
+                                Margin="3,1">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Background" Value="Gray"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="OrangeRed"/>
+                                            <Setter Property="Background" Value="Red"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="Calculate" Command="{Binding CommandCalculate}"
+                                Margin="3,1"/>
                     </UniformGrid>
                 </GroupBox>
 
@@ -77,15 +98,20 @@
                       Height="200" VerticalAlignment="Top" Margin="2">
                     <UniformGrid Columns="2">
                         <TextBlock Text="All positions"/>
-                        <TextBlock Text="{Binding AllPositionsCount}"/>
+                        <TextBlock Text="{Binding AllPositionsCount,
+                                            StringFormat={}{0:0.######################################}}"/>
                         <TextBlock Text="Price average"/>
-                        <TextBlock Text="{Binding PriceAverage}"/>
+                        <TextBlock Text="{Binding PriceAverage,
+                                            StringFormat={}{0:0.######################################}}"/>
                         <TextBlock Text="Var margin"/>
-                        <TextBlock Text="{Binding VarMargin}"/>
+                        <TextBlock Text="{Binding VarMargin,
+                                            StringFormat={}{0:0.######################################}}"/>
                         <TextBlock Text="Accum"/>
-                        <TextBlock Text="{Binding Accum}"/>
+                        <TextBlock Text="{Binding Accum,
+                                            StringFormat={}{0:0.######################################}}"/>
                         <TextBlock Text="Total"/>
-                        <TextBlock Text="{Binding Total}"/>
+                        <TextBlock Text="{Binding Total,
+                                            StringFormat={}{0:0.######################################}}"/>
                     </UniformGrid>
 
                 </GroupBox>
@@ -95,36 +121,53 @@
             </StackPanel>
 
             <GroupBox Grid.Column="1" Header="Levels">
-                <DataGrid ItemsSource="{Binding Levels}" AutoGenerateColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="PriceLevel"
-                                            Binding="{Binding PriceLevel}"/>
-                        <DataGridTemplateColumn Header="Side">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Side}"
+                <StackPanel Orientation="Vertical">
+                    <ScrollViewer Height="400">
+                        <DataGrid ItemsSource="{Binding Levels}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  IsReadOnly="{Binding IsReadOnly}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="PriceLevel"
+                                            Binding="{Binding PriceLevel,
+                                            StringFormat={}{0:0.######################################}}"/>
+                                <DataGridTemplateColumn Header="Side">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Side}"
                                                Foreground="{Binding Side,
                                                  Converter={StaticResource ConverterColorToSide}}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="OpenPrice"
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="OpenPrice"
                                             Binding="{Binding OpenPrice}"/>
-                        <DataGridTextColumn Header="Volume"
+                                <DataGridTextColumn Header="Volume"
                                             Binding="{Binding Volume}"/>
-                        <DataGridTextColumn Header="Margin"
+                                <DataGridTextColumn Header="Margin"
                                             Binding="{Binding Margin}"/>
-                        <DataGridTextColumn Header="Accum"
+                                <DataGridTextColumn Header="Accum"
                                             Binding="{Binding Accum}"/>
-                        <DataGridTextColumn Header="TakePrice"
+                                <DataGridTextColumn Header="TakePrice"
                                             Binding="{Binding TakePrice}"/>
-                        <DataGridTextColumn Header="LimitVolume"
+                                <DataGridTextColumn Header="LimitVolume"
                                             Binding="{Binding LimitVolume}"/>
-                        <DataGridTextColumn Header="LimitTake"
+                                <DataGridTextColumn Header="TakeVolume"
                                             Binding="{Binding LimitTake}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                <DataGridTextColumn Header="Id"
+                                            Binding="{Binding Id}"/>
+                                <DataGridTextColumn Header="PassVolume"
+                                            Binding="{Binding PassVolume}"/>
+                                <DataGridTextColumn Header="PassTake"
+                                            Binding="{Binding PassTake}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </ScrollViewer>
+
+                    <Button Content="Add row" Margin="10,3" 
+                            Command="{Binding CommandAddRow}"/>
+                </StackPanel>
+                
             </GroupBox>
             
         </Grid>

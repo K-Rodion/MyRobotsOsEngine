@@ -815,6 +815,7 @@
     <Compile Include="MyEntity\Emitent.cs" />
     <Compile Include="MyEntity\Exchange.cs" />
     <Compile Include="MyEntity\Level.cs" />
+    <Compile Include="MyEntity\MessageForLog.cs" />
     <Compile Include="MyEntity\StepType.cs" />
     <Compile Include="OsConverter\OsCandleConverterUi.xaml.cs">
       <DependentUpon>OsCandleConverterUi.xaml</DependentUpon>

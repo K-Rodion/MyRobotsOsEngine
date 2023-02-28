@@ -1983,7 +1983,7 @@ namespace OsEngine.Market.Servers
                 }
                 try
                 {
-                    await Task.Delay(20);
+                    await Task.Delay(1);
 
                     if (_ordersToExecute != null && _ordersToExecute.Count != 0)
                     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms.DataVisualization.Charting;
 using OkonkwoOandaV20;
 using OkonkwoOandaV20.TradeLibrary.DataTypes.Pricing;
@@ -74,7 +76,6 @@ namespace OsEngine.ViewModels
                 
             }
         }
-
         private Security _selectedSecurity = null;
 
         public decimal StartPoint
@@ -108,11 +109,19 @@ namespace OsEngine.ViewModels
 
             set
             {
+                if (Server != null)
+                {
+                    UnSubscribeToServer();
+                    _server = null;
+                }
+
                 _server = value;
                 OnPropertyChanged(nameof(ServerType));
+
                 SubscribeToServer();
 
                 StringPortfolios = GetStringPortfolios(_server);
+
                 if (StringPortfolios != null && StringPortfolios.Count>0)
                 {
                     StringPortfolio = StringPortfolios[0];
@@ -134,7 +143,7 @@ namespace OsEngine.ViewModels
                 _portfolio = GetPortfolio(_stringPortfolio);
             }
         }
-        private string _stringPortfolio;
+        private string _stringPortfolio = "";
 
         public int CountLevels
         {
@@ -158,7 +167,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Direction));
             }
         }
-        private Direction _direction;
+        private Direction _direction = Direction.BUY;
 
         public List<Direction> Directions { get; set; } = new List<Direction>()
         {
@@ -185,6 +194,12 @@ namespace OsEngine.ViewModels
             {
                 _isRun = value;
                 OnPropertyChanged(nameof(IsRun));
+
+                if (IsRun)
+                {
+                    TradeLogic();
+
+                }
             }
         }
         private bool _isRun;
@@ -199,7 +214,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(StepType));
             }
         }
-        private StepType _stepType;
+        private StepType _stepType = StepType.PUNKT;
 
         public List<StepType> StepTypes { get; set; } = new List<StepType>()
         {
@@ -321,8 +336,6 @@ namespace OsEngine.ViewModels
 
         #region Fields ==========================================================
 
-        
-
         private Portfolio _portfolio;
 
         #endregion
@@ -405,23 +418,63 @@ namespace OsEngine.ViewModels
                 if (level.PassVolume && level.PriceLevel != 0
                     && Math.Abs(level.Volume) + level.LimitVolume < Lot)
                 {
-                    if (level.Side == Side.Sell && level.PriceLevel <= borderUp)
+                    if ((level.Side == Side.Buy && level.PriceLevel >= borderDown)
+                        || (level.Side == Side.Sell && level.PriceLevel <= borderUp))
                     {
+                        decimal workLot = Lot - Math.Abs(level.Volume) - level.LimitVolume;
 
-                    }
-                    else if (level.Side == Side.Buy && level.PriceLevel >= borderDown)
-                    {
+                        RobotWindowVM.Log(Header, "Level = " + level.GetStringForSave());
+                        RobotWindowVM.Log(Header, "workLot = " + workLot);
 
+
+                        level.PassVolume = false;
+
+                        Order order = SendOrder(SelectedSecurity, level.PriceLevel, workLot, level.Side);
+
+                        if (order != null)
+                        {
+                            level.OrdersForOpen.Add(order);
+
+                            RobotWindowVM.Log(Header, "Send linit order = " + GetStringForSave(order));
+                        }
+                        else
+                        {
+                            level.PassVolume = true;
+                        }
                     }
+
+
+
+                    
                 }
 
                 
             }
         }
 
-        private void SendOrder(decimal price, decimal volume, Side side)
+        private Order SendOrder(Security sec , decimal price, decimal volume, Side side)
         {
+            if (string.IsNullOrEmpty(StringPortfolio))
+            {
+                MessageBox.Show("StringPortfolio == null ");
+                return null;
+            }
 
+            Order order = new Order()
+            {
+                Price = price,
+                Volume = volume,
+                Side = side,
+                PortfolioNumber = StringPortfolio,
+                TypeOrder = OrderPriceType.Limit,
+                NumberUser = NumberGen.GetNumberOrder(StartProgram.IsOsTrader),
+                SecurityNameCode = sec.Name,
+                SecurityClassCode = sec.NameClass
+            };
+
+            Server.ExecuteOrder(order);
+
+            return order;
         }
 
         private void StartStop(object o)
@@ -431,11 +484,6 @@ namespace OsEngine.ViewModels
 
         private void SubscribeToServer()
         {
-            if (Server != null)
-            {
-                UnSubscribeToServer();
-            }
-
             Server.NewMyTradeEvent += Server_NewMyTradeEvent;//пришла новая сделка
             Server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;//изменение ордера
             Server.NewCandleIncomeEvent += Server_NewCandleIncomeEvent;//пришла новая свеча
@@ -452,7 +500,12 @@ namespace OsEngine.ViewModels
 
         private void Server_NewTradeEvent(List<Trade> trades)
         {
-            Price = trades.Last().Price;
+            if (trades != null && trades[0].SecurityNameCode == SelectedSecurity.Name)
+            {
+                Price = trades.Last().Price;
+            }
+
+            
         }
 
         private void Server_NewCandleIncomeEvent(CandleSeries series)
@@ -524,7 +577,7 @@ namespace OsEngine.ViewModels
 
         private Portfolio GetPortfolio(string number)
         {
-            if (Server != null)
+            if (Server != null && Server.Portfolios != null)
             {
                 foreach (var portf in Server.Portfolios)
                 {
@@ -597,7 +650,39 @@ namespace OsEngine.ViewModels
 
         }
 
-        
+        private string GetStringForSave(Order order)
+        {
+            string str = "";
+
+            str += order.SecurityNameCode + " | ";
+            str += order.PortfolioNumber + " | ";
+            str += order.TimeCreate + " | ";
+            str += order.State + " | ";
+            str += order.Side + " | ";
+            str += "Volume = " + order.Volume + " | ";
+            str += "Price = " + order.Price + " | ";
+            str += "NumberUser = " + order.NumberUser + " | ";
+            str += "NumberMarket = " + order.NumberMarket + " | ";
+
+            return str;
+        }
+
+        private string GetStringForSave(MyTrade myTrade)
+        {
+            string str = "";
+
+            str += myTrade.SecurityNameCode + " | ";
+            str += myTrade.Time + " | ";
+            str += myTrade.Side + " | ";
+            str += "Volume = " + myTrade.Volume + " | ";
+            str += "Price = " + myTrade.Price + " | ";
+            str += "NumberOrderParent = " + myTrade.NumberOrderParent + " | ";
+            str += "NumberTrade = " + myTrade.NumberTrade + " | ";
+
+            return str;
+        }
+
+
 
         #endregion
     }
