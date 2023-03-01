@@ -195,6 +195,96 @@ namespace OsEngine.MyEntity
 
         #region Methods ====================================================================================
 
+        public bool NewOrder(Order newOrder)
+        {
+            for (int i = 0; i < OrdersForOpen.Count; i++)
+            {
+                if (OrdersForOpen[i].NumberMarket == newOrder.NumberMarket)
+                {
+                    CopyOrder(newOrder, OrdersForOpen[i]);
+
+                    CalculateOrders();
+
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < OrdersForClose.Count; i++)
+            {
+                if (OrdersForClose[i].NumberMarket == newOrder.NumberMarket)
+                {
+                    CopyOrder(newOrder, OrdersForClose[i]);
+
+                    CalculateOrders();
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void CalculateOrders()
+        {
+            decimal activeVolume = 0;
+            decimal volumeExecute = 0;
+            decimal activeTake = 0;
+            bool passLimit = true;
+            bool passTake = true;
+
+            foreach (Order order in OrdersForOpen)
+            {
+                volumeExecute += order.VolumeExecute;
+
+                if (order.State == OrderStateType.Activ || order.State == OrderStateType.Patrial)
+                {
+                    activeVolume += order.Volume - order.VolumeExecute;
+                }
+                else if (order.State == OrderStateType.Pending || order.State == OrderStateType.None)
+                {
+                    passLimit = false;
+                }
+            }
+
+            foreach (Order order in OrdersForClose)
+            {
+                volumeExecute -= order.VolumeExecute;
+
+                if (order.State == OrderStateType.Activ || order.State == OrderStateType.Patrial)
+                {
+                    activeTake += order.Volume - order.VolumeExecute;
+                }
+                else if (order.State == OrderStateType.Pending || order.State == OrderStateType.None)
+                {
+                    passTake = false;
+                }
+            }
+
+            Volume = volumeExecute;
+            if (Side == Side.Sell)
+            {
+                Volume *= -1;
+            }
+
+            LimitVolume = activeVolume;
+            TakeVolume = activeTake;
+            PassVolume = passLimit;
+            PassTake = passTake;
+        }
+
+        private Order CopyOrder(Order newOrder, Order order)
+        {
+            order.State = newOrder.State;
+            order.TimeCancel = newOrder.TimeCancel;
+            order.Volume = newOrder.Volume;
+            order.VolumeExecute = newOrder.VolumeExecute;
+            order.TimeDone = newOrder.TimeDone;
+            order.TimeCallBack = newOrder.TimeCallBack;
+            order.NumberUser = newOrder.NumberUser;
+
+            return order;
+        }
+
         private void Change()
         {
             OnPropertyChanged(nameof(Volume));

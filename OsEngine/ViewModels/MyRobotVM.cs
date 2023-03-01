@@ -515,7 +515,31 @@ namespace OsEngine.ViewModels
 
         private void Server_NewOrderIncomeEvent(Order order)
         {
-            
+            if (order == null)
+            {
+                return;
+            }
+
+            if (SelectedSecurity != null 
+                && order.SecurityNameCode == SelectedSecurity.Name
+                && order.ServerType == Server.ServerType
+                && order.PortfolioNumber == StringPortfolio)
+            {
+                RobotWindowVM.Log(Header, "NewOrderIncomeEvent = " + GetStringForSave(order));
+
+                if (order.NumberMarket != "")
+                {
+                    foreach (Level level in Levels)
+                    {
+                        bool res = level.NewOrder(order);
+
+                        if (res)
+                        {
+                            RobotWindowVM.Log(Header, "UpDate Level = " + level.GetStringForSave());
+                        }
+                    }
+                }
+            }
         }
 
         private void Server_NewMyTradeEvent(MyTrade myTrade)

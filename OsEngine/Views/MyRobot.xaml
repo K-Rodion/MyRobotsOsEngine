@@ -153,9 +153,7 @@
                                 <DataGridTextColumn Header="LimitVolume"
                                             Binding="{Binding LimitVolume}"/>
                                 <DataGridTextColumn Header="TakeVolume"
-                                            Binding="{Binding LimitTake}"/>
-                                <DataGridTextColumn Header="Id"
-                                            Binding="{Binding Id}"/>
+                                            Binding="{Binding TakeVolume}"/>
                                 <DataGridTextColumn Header="PassVolume"
                                             Binding="{Binding PassVolume}"/>
                                 <DataGridTextColumn Header="PassTake"

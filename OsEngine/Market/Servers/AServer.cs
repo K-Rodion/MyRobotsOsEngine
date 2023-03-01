@@ -2037,6 +2037,8 @@ namespace OsEngine.Market.Servers
 
             myOrder.ServerType = ServerType;
 
+            UpDateOrder(myOrder);
+
             _ordersToSend.Enqueue(myOrder);
 
             for (int i = 0; i < _myTrades.Count; i++)
@@ -2047,7 +2049,7 @@ namespace OsEngine.Market.Servers
                 }
             }
 
-            UpDateOrder(myOrder);
+            
         }
 
         /// <summary>
@@ -2171,6 +2173,7 @@ namespace OsEngine.Market.Servers
             order.NumberMarket = orderToCopy.NumberMarket;
             order.State = orderToCopy.State;
             order.VolumeExecute = orderToCopy.VolumeExecute;
+            order.PortfolioNumber = orderToCopy.PortfolioNumber;
         }
 
         private void UpDateMyTrade(MyTrade trade)
