@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
 using OsEngine.Robots;
+using OsEngine.ViewModels;
 
 namespace OsEngine.MyEntity
 {
@@ -194,6 +195,120 @@ namespace OsEngine.MyEntity
 
 
         #region Methods ====================================================================================
+
+        public bool AddMyTrade(MyTrade newTrade, Security security)
+        {
+            foreach (var trade in _myTrades)
+            {
+                if (trade.NumberTrade == newTrade.NumberTrade)
+                {
+                    return false;
+                }
+            }
+
+            if (IsMyTrade(newTrade))
+            {
+                _myTrades.Add(newTrade);
+
+                CalculatePosition(newTrade, security);
+
+                CalculateOrders();
+
+                return true;
+            }
+            return false;
+        }
+
+        private void CalculatePosition(MyTrade myTrade, Security security)
+        {
+            string str = "myTrade = " + myTrade.Price + "\n";
+            str += "Side = " + myTrade.Side + "\n";
+            RobotWindowVM.Log(security.Name, str);
+
+            decimal accum = 0;
+
+            if (_calcVolume == 0)
+            {
+                OpenPrice = myTrade.Price;
+            }
+            else if (_calcVolume > 0)
+            {
+                if (myTrade.Side == Side.Buy)
+                {
+                    OpenPrice = (_calcVolume * OpenPrice + myTrade.Volume * myTrade.Price) / (_calcVolume + myTrade.Volume);
+                }
+                else
+                {
+                    if (myTrade.Volume <= _calcVolume)
+                    {
+                        accum = (myTrade.Price - OpenPrice) * myTrade.Volume;
+                    }
+                    else
+                    {
+                        accum = (myTrade.Price - OpenPrice) * _calcVolume;
+                        OpenPrice = myTrade.Price;
+                    }
+                }
+            }
+            else if (_calcVolume < 0)
+            {
+                if (myTrade.Side == Side.Buy)
+                {
+                    if (myTrade.Volume <= Math.Abs(_calcVolume))
+                    {
+                        accum = (OpenPrice - myTrade.Price) * myTrade.Volume;
+                    }
+                    else
+                    {
+                        accum = (OpenPrice - myTrade.Price) * Math.Abs(_calcVolume);
+                        OpenPrice = myTrade.Price;
+                    }
+                }
+                else
+                {
+                    OpenPrice = (Math.Abs(_calcVolume) * OpenPrice + myTrade.Volume * myTrade.Price) / (Math.Abs(_calcVolume) + myTrade.Volume);
+                }
+            }
+
+            if (myTrade.Side == Side.Buy)
+            {
+                _calcVolume += myTrade.Volume;
+            }
+            else
+            {
+                _calcVolume -= myTrade.Volume;
+            }
+
+            if (_calcVolume == 0)
+            {
+                OpenPrice = 0;
+            }
+
+            Accum += accum * security.Lot;
+
+            OpenPrice = Math.Round(OpenPrice, security.Decimals);
+        }
+
+        private bool IsMyTrade(MyTrade newTrade)
+        {
+            foreach (var order in OrdersForOpen)
+            {
+                if (order.NumberMarket == newTrade.NumberOrderParent)
+                {
+                    return true;
+                }
+            }
+
+            foreach (var order in OrdersForClose)
+            {
+                if (order.NumberMarket == newTrade.NumberOrderParent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         public bool NewOrder(Order newOrder)
         {

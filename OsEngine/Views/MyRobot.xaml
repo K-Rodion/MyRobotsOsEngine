@@ -145,11 +145,14 @@
                                 <DataGridTextColumn Header="Volume"
                                             Binding="{Binding Volume}"/>
                                 <DataGridTextColumn Header="Margin"
-                                            Binding="{Binding Margin}"/>
+                                            Binding="{Binding Margin,
+                                            StringFormat=G29}"/>
                                 <DataGridTextColumn Header="Accum"
-                                            Binding="{Binding Accum}"/>
+                                            Binding="{Binding Accum,
+                                            StringFormat=G29}"/>
                                 <DataGridTextColumn Header="TakePrice"
-                                            Binding="{Binding TakePrice}"/>
+                                            Binding="{Binding TakePrice,
+                                            StringFormat=G29}"/>
                                 <DataGridTextColumn Header="LimitVolume"
                                             Binding="{Binding LimitVolume}"/>
                                 <DataGridTextColumn Header="TakeVolume"

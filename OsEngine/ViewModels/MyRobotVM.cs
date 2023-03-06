@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms.DataVisualization.Charting;
 using OkonkwoOandaV20;
 using OkonkwoOandaV20.TradeLibrary.DataTypes.Pricing;
@@ -21,11 +22,11 @@ using OsEngine.Views;
 
 namespace OsEngine.ViewModels
 {
-    public class MyRobotVM:BaseVM
+    public class MyRobotVM : BaseVM
     {
         public MyRobotVM()
         {
-            
+
         }
 
 
@@ -57,6 +58,7 @@ namespace OsEngine.ViewModels
             }
 
         }
+
         private string _header;
 
         public Security SelectedSecurity
@@ -73,9 +75,10 @@ namespace OsEngine.ViewModels
                 {
                     StartSecurity(SelectedSecurity);
                 }
-                
+
             }
         }
+
         private Security _selectedSecurity = null;
 
         public decimal StartPoint
@@ -88,6 +91,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(StartPoint));
             }
         }
+
         private decimal _startPoint;
 
         public ServerType ServerType
@@ -98,6 +102,7 @@ namespace OsEngine.ViewModels
                 {
                     return ServerType.None;
                 }
+
                 return Server.ServerType;
             }
 
@@ -122,13 +127,15 @@ namespace OsEngine.ViewModels
 
                 StringPortfolios = GetStringPortfolios(_server);
 
-                if (StringPortfolios != null && StringPortfolios.Count>0)
+                if (StringPortfolios != null && StringPortfolios.Count > 0)
                 {
                     StringPortfolio = StringPortfolios[0];
                 }
+
                 OnPropertyChanged(nameof(StringPortfolios));
             }
         }
+
         private IServer _server = null;
 
         public string StringPortfolio
@@ -143,6 +150,7 @@ namespace OsEngine.ViewModels
                 _portfolio = GetPortfolio(_stringPortfolio);
             }
         }
+
         private string _stringPortfolio = "";
 
         public int CountLevels
@@ -155,6 +163,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(CountLevels));
             }
         }
+
         private int _countLevels;
 
         public Direction Direction
@@ -167,6 +176,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Direction));
             }
         }
+
         private Direction _direction = Direction.BUY;
 
         public List<Direction> Directions { get; set; } = new List<Direction>()
@@ -184,6 +194,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Lot));
             }
         }
+
         private decimal _lot;
 
         public bool IsRun
@@ -202,6 +213,7 @@ namespace OsEngine.ViewModels
                 }
             }
         }
+
         private bool _isRun;
 
         public StepType StepType
@@ -214,6 +226,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(StepType));
             }
         }
+
         private StepType _stepType = StepType.PUNKT;
 
         public List<StepType> StepTypes { get; set; } = new List<StepType>()
@@ -231,6 +244,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(StepLevel));
             }
         }
+
         private decimal _stepLevel;
 
         public decimal TakeLevel
@@ -243,6 +257,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(TakeLevel));
             }
         }
+
         private decimal _takeLevel;
 
         public int MaxActiveLevel
@@ -255,6 +270,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(MaxActiveLevel));
             }
         }
+
         private int _maxActiveLevel;
 
         public decimal AllPositionsCount
@@ -267,6 +283,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(AllPositionsCount));
             }
         }
+
         private decimal _allPositionsCount;
 
         public decimal PriceAverage
@@ -279,6 +296,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(PriceAverage));
             }
         }
+
         private decimal _priceAverage;
 
         public decimal Price
@@ -291,6 +309,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Price));
             }
         }
+
         private decimal _price;
 
         public decimal VarMargin
@@ -303,6 +322,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(VarMargin));
             }
         }
+
         private decimal _varMargin;
 
         public decimal Accum
@@ -315,6 +335,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Accum));
             }
         }
+
         private decimal _accum;
 
         public decimal Total
@@ -327,6 +348,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Total));
             }
         }
+
         private decimal _total;
 
 
@@ -343,6 +365,7 @@ namespace OsEngine.ViewModels
         #region Commands ==========================================================
 
         private DelegateCommand _commandStartStop;
+
         public DelegateCommand CommandStartStop
         {
             get
@@ -358,6 +381,7 @@ namespace OsEngine.ViewModels
 
 
         private DelegateCommand _commandCalculate;
+
         public DelegateCommand CommandCalculate
         {
             get
@@ -372,6 +396,7 @@ namespace OsEngine.ViewModels
         }
 
         private DelegateCommand _commandSelectSecurity;
+
         public DelegateCommand CommandSelectSecurity
         {
             get
@@ -391,11 +416,24 @@ namespace OsEngine.ViewModels
 
         private void TradeLogic()
         {
-            if (IsRun == false)
+            if (IsRun == false || SelectedSecurity == null)
             {
                 return;
             }
 
+            foreach (Level level in Levels)
+            {
+                TradeLogicOpen(level);
+                TradeLogicClose(level);
+            }
+
+            
+
+
+        }
+
+        private decimal GetStepLevel()
+        {
             decimal stepLevel = 0;
 
             if (StepType == StepType.PUNKT)
@@ -409,48 +447,131 @@ namespace OsEngine.ViewModels
                 stepLevel = Decimal.Round(stepLevel, SelectedSecurity.Decimals);
             }
 
+            return stepLevel;
+        }
+
+        private void TradeLogicOpen(Level level)
+        {
+            decimal stepLevel = GetStepLevel();
+
             decimal borderUp = Price + stepLevel * MaxActiveLevel;
 
             decimal borderDown = Price - stepLevel * MaxActiveLevel;
 
-            foreach (Level level in Levels)
+            if (level.PassVolume && level.PriceLevel != 0
+                                 && Math.Abs(level.Volume) + level.LimitVolume < Lot)
             {
-                if (level.PassVolume && level.PriceLevel != 0
-                    && Math.Abs(level.Volume) + level.LimitVolume < Lot)
+                if ((level.Side == Side.Buy && level.PriceLevel >= borderDown)
+                    || (level.Side == Side.Sell && level.PriceLevel <= borderUp))
                 {
-                    if ((level.Side == Side.Buy && level.PriceLevel >= borderDown)
-                        || (level.Side == Side.Sell && level.PriceLevel <= borderUp))
+                    decimal workLot = Lot - Math.Abs(level.Volume) - level.LimitVolume;
+
+                    RobotWindowVM.Log(Header, "Level = " + level.GetStringForSave());
+                    RobotWindowVM.Log(Header, "workLot = " + workLot);
+
+
+                    level.PassVolume = false;
+
+                    Order order = SendOrder(SelectedSecurity, level.PriceLevel, workLot, level.Side);
+
+                    if (order != null)
                     {
-                        decimal workLot = Lot - Math.Abs(level.Volume) - level.LimitVolume;
+                        level.OrdersForOpen.Add(order);
 
-                        RobotWindowVM.Log(Header, "Level = " + level.GetStringForSave());
-                        RobotWindowVM.Log(Header, "workLot = " + workLot);
-
-
-                        level.PassVolume = false;
-
-                        Order order = SendOrder(SelectedSecurity, level.PriceLevel, workLot, level.Side);
-
-                        if (order != null)
-                        {
-                            level.OrdersForOpen.Add(order);
-
-                            RobotWindowVM.Log(Header, "Send linit order = " + GetStringForSave(order));
-                        }
-                        else
-                        {
-                            level.PassVolume = true;
-                        }
+                        RobotWindowVM.Log(Header, "Send linit order = " + GetStringForSave(order));
                     }
-
-
-
-                    
+                    else
+                    {
+                        level.PassVolume = true;
+                    }
                 }
 
-                
+            }
+
+            
+        }
+
+        private void TradeLogicClose(Level level)
+        {
+            decimal stepLevel = GetStepLevel();
+
+            if (level.PassTake && level.PriceLevel != 0
+                               && level.Volume != 0
+                               && Math.Abs(level.Volume) != level.TakeVolume)
+            {
+                Side side = Side.None;
+
+                if (level.Volume > 0)
+                {
+                    side = Side.Sell;
+                }
+                else if (level.Volume < 0)
+                {
+                    side = Side.Buy;
+                }
+
+                RobotWindowVM.Log(Header, "Level = " + level.GetStringForSave());
+
+                decimal workLot = Math.Abs(level.Volume) - level.TakeVolume;
+
+                RobotWindowVM.Log(Header, "workLot = " + workLot);
+
+                if (workLot > 0)
+                {
+                    level.PassTake = false;
+
+                    Order order = SendOrder(SelectedSecurity, level.TakePrice, workLot, side);
+
+                    if (order != null)
+                    {
+                        level.OrdersForClose.Add(order);
+
+                        RobotWindowVM.Log(Header, "Send take order = " + GetStringForSave(order));
+                    }
+                    else
+                    {
+                        level.PassTake = true;
+                    }
+                }
+
             }
         }
+
+        private void CalculateMargin()
+        {
+            if (Levels.Count == 0 || SelectedSecurity == null)
+            {
+                return;
+            }
+
+            decimal volume = 0;
+            decimal accum = 0;
+            decimal margine = 0;
+            decimal averPrice = 0;
+
+            foreach (var level in Levels)
+            {
+                if (level.Volume + volume != 0)
+                {
+                    averPrice = (level.OpenPrice * level.Volume + volume * averPrice) / (level.Volume + volume);
+                }
+
+                level.Margin = (Price - level.OpenPrice) * level.Volume * SelectedSecurity.Lot;
+
+                margine += level.Margin;
+                volume += level.Volume;
+                accum += level.Accum;
+
+            }
+
+            AllPositionsCount = Math.Round(volume, SelectedSecurity.Decimals);
+            PriceAverage = Math.Round(averPrice, SelectedSecurity.Decimals);
+            VarMargin = Math.Round(margine, SelectedSecurity.Decimals);
+            Accum = Math.Round(accum, SelectedSecurity.Decimals);
+
+            Total = Accum + VarMargin;
+        }
+
 
         private Order SendOrder(Security sec , decimal price, decimal volume, Side side)
         {
@@ -503,6 +624,8 @@ namespace OsEngine.ViewModels
             if (trades != null && trades[0].SecurityNameCode == SelectedSecurity.Name)
             {
                 Price = trades.Last().Price;
+
+                CalculateMargin();
             }
 
             
@@ -525,7 +648,15 @@ namespace OsEngine.ViewModels
                 && order.ServerType == Server.ServerType
                 && order.PortfolioNumber == StringPortfolio)
             {
-                RobotWindowVM.Log(Header, "NewOrderIncomeEvent = " + GetStringForSave(order));
+                bool isRec = true;
+
+                if (order.State == OrderStateType.Activ && order.TimeCallBack.AddSeconds(10) < Server.ServerTime) isRec = false;
+
+                
+                if (isRec)
+                {
+                    RobotWindowVM.Log(Header, "NewOrderIncomeEvent = " + GetStringForSave(order));
+                }
 
                 if (order.NumberMarket != "")
                 {
@@ -535,6 +666,7 @@ namespace OsEngine.ViewModels
 
                         if (res)
                         {
+                            
                             RobotWindowVM.Log(Header, "UpDate Level = " + level.GetStringForSave());
                         }
                     }
@@ -544,12 +676,39 @@ namespace OsEngine.ViewModels
 
         private void Server_NewMyTradeEvent(MyTrade myTrade)
         {
-            
+            if (myTrade == null || SelectedSecurity == null
+                || myTrade.SecurityNameCode != SelectedSecurity.Name)
+            {
+                return;
+            }
+
+            foreach (var level in Levels)
+            {
+                bool res = level.AddMyTrade(myTrade, SelectedSecurity);
+
+                if (res)
+                {
+                    RobotWindowVM.Log(Header, GetStringForSave(myTrade));
+
+                    if (myTrade.Side == level.Side)
+                    {
+                       TradeLogicClose(level);
+                    }
+                    else
+                    {
+                        TradeLogicOpen(level);
+                    }
+                }
+            }
         }
 
         private void Calculate(object o)
         {
+            RobotWindowVM.Log(Header, "\n\n Calculate");
+
             ObservableCollection<Level> levels = new ObservableCollection<Level>();
+
+            decimal stepTake = 0;
 
             if (CountLevels <= 0)
             {
@@ -569,6 +728,8 @@ namespace OsEngine.ViewModels
                 {
                     currBuyPrice -= StepLevel * SelectedSecurity.PriceStep;
                     currSellPrice += StepLevel * SelectedSecurity.PriceStep;
+
+                    stepTake = TakeLevel * SelectedSecurity.PriceStep;
                 }
                 else if (StepType == StepType.PERCENT)
                 {
@@ -577,6 +738,9 @@ namespace OsEngine.ViewModels
 
                     currSellPrice += StepLevel * currSellPrice / 100;
                     currSellPrice = Decimal.Round(currSellPrice, SelectedSecurity.Decimals);
+
+                    stepTake = TakeLevel * currBuyPrice / 100;
+                    stepTake = Decimal.Round(stepTake, SelectedSecurity.Decimals);
                 }
 
                 levelBuy.PriceLevel = currBuyPrice;
@@ -584,11 +748,15 @@ namespace OsEngine.ViewModels
 
                 if (Direction == Direction.BUY || Direction == Direction.BUYSELL)
                 {
+                    levelBuy.TakePrice = levelBuy.PriceLevel + stepTake;
+
                     levels.Add(levelBuy);
                 }
 
                 if (Direction == Direction.SELL || Direction == Direction.BUYSELL)
                 {
+                    levelSell.TakePrice = levelSell.PriceLevel - stepTake;
+                    
                     levels.Insert(0, levelSell);
                 }
                 
