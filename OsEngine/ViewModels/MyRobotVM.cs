@@ -43,7 +43,7 @@ namespace OsEngine.ViewModels
             {
                 if (SelectedSecurity != null)
                 {
-                    return SelectedSecurity.Name;
+                    return SelectedSecurity.NameId;
                 }
                 else
                 {
@@ -133,10 +133,25 @@ namespace OsEngine.ViewModels
                 }
 
                 OnPropertyChanged(nameof(StringPortfolios));
+
+                ServerState = _server.ServerStatus.ToString();
+                OnPropertyChanged(nameof(ServerState));
             }
         }
 
         private IServer _server = null;
+
+        public string ServerState
+        {
+            get => _serverState;
+
+            set
+            {
+                _serverState = value;
+                OnPropertyChanged(nameof(ServerState));
+            }
+        }
+        private string _serverState = "";
 
         public string StringPortfolio
         {
