@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Commands;
 using OsEngine.Market;
 using OsEngine.MyEntity;
@@ -24,11 +25,25 @@ namespace OsEngine.ViewModels
             {
                 RecordLog();
             });
+
+            Load();
         }
 
         #region Properties ================================================
 
         public ObservableCollection<MyRobotVM> Robots { get; set; } = new ObservableCollection<MyRobotVM>();
+
+        public MyRobotVM SelectedRobot
+        {
+            get => _selectedRobot;
+
+            set
+            {
+                _selectedRobot = value;
+                OnPropertyChanged(nameof(SelectedRobot));
+            }
+        }
+        private MyRobotVM _selectedRobot;
 
 
 
@@ -98,10 +113,35 @@ namespace OsEngine.ViewModels
 
         void AddTabEmitent(object o)
         {
-            Robots.Add(new MyRobotVM()
+            AddTab("");
+        }
+
+        void AddTab(string name)
+        {
+            if (name != "")
             {
-                Header = "Tab "+ (Robots.Count+1)
-            });
+                Robots.Add(new MyRobotVM()
+                {
+                    Header = name,
+                    NumberTab = Robots.Count + 1
+                });
+            }
+            else
+            {
+                Robots.Add(new MyRobotVM()
+                {
+                    Header = "Tab " + Robots.Count + 1,
+                    NumberTab = Robots.Count + 1
+                });
+            }
+
+            Robots.Last().OnSelectedSecurity += RobotWindowVM_OnSelectedSecurity;
+            
+        }
+
+        private void RobotWindowVM_OnSelectedSecurity()
+        {
+            Save();
         }
 
         void DeleteTabEmitent(object obj)
@@ -168,6 +208,83 @@ namespace OsEngine.ViewModels
 
                 Thread.Sleep(5);
             }
+        }
+
+        private void Save()
+        {
+            if (!Directory.Exists(@"Parameters"))
+            {
+                Directory.CreateDirectory(@"Parameters");
+            }
+
+            string str = "";
+
+            for (int i = 0; i < Robots.Count; i++)
+            {
+                str += Robots[i].Header + ";";
+            }
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(@"Parameters\param.txt", false))
+                {
+                    writer.WriteLine(str);
+
+                    writer.WriteLine(SelectedRobot.NumberTab);
+
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Log("App", "Save error = " + e.Message);
+            }
+            
+        }
+
+        private void Load()
+        {
+            if (!Directory.Exists(@"Parameters"))
+            {
+                return;
+            }
+
+            string strtabs = "";
+
+            int selectedNumber = 0;
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(@"Parameters\param.txt"))
+                {
+                    strtabs = reader.ReadLine();
+
+                    selectedNumber = Convert.ToInt32(reader.ReadLine());
+
+                    reader.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Log("App", "Load error = " + e.Message);
+            }
+
+            string[] tabs = strtabs.Split(';');
+
+            foreach (var tab in tabs)
+            {
+                if (tab != "")
+                {
+                    AddTab(tab);
+                }
+            }
+
+            if (Robots.Count > selectedNumber)
+            {
+                SelectedRobot = Robots[selectedNumber - 1];
+            }
+            
+
         }
 
         #endregion

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms.DataVisualization.Charting;
+using Newtonsoft.Json;
 using OkonkwoOandaV20;
 using OkonkwoOandaV20.TradeLibrary.DataTypes.Pricing;
 using OsEngine.Commands;
@@ -24,9 +26,12 @@ namespace OsEngine.ViewModels
 {
     public class MyRobotVM : BaseVM
     {
-        public MyRobotVM()
+        public MyRobotVM(string header, int number)
         {
+            Header = header;
+            NumberTab = number;
 
+            Load();
         }
 
 
@@ -74,6 +79,7 @@ namespace OsEngine.ViewModels
                 if (SelectedSecurity != null)
                 {
                     StartSecurity(SelectedSecurity);
+                    OnSelectedSecurity?.Invoke();
                 }
 
             }
@@ -100,13 +106,22 @@ namespace OsEngine.ViewModels
             {
                 if (Server == null)
                 {
-                    return ServerType.None;
+                    return _serverType;
                 }
 
                 return Server.ServerType;
             }
 
+            set
+            {
+                if (value != _serverType)
+                {
+                    _serverType = value;
+                }
+            }
+
         }
+        private ServerType _serverType = ServerType.None;
 
         public IServer Server
         {
@@ -134,8 +149,9 @@ namespace OsEngine.ViewModels
 
                 OnPropertyChanged(nameof(StringPortfolios));
 
-                ServerState = _server.ServerStatus.ToString();
-                OnPropertyChanged(nameof(ServerState));
+                ServerState = Server.ServerStatus.ToString();
+
+                
             }
         }
 
@@ -375,6 +391,8 @@ namespace OsEngine.ViewModels
 
         private Portfolio _portfolio;
 
+        public int NumberTab;
+
         #endregion
 
         #region Commands ==========================================================
@@ -586,8 +604,7 @@ namespace OsEngine.ViewModels
 
             Total = Accum + VarMargin;
         }
-
-
+        
         private Order SendOrder(Security sec , decimal price, decimal volume, Side side)
         {
             if (string.IsNullOrEmpty(StringPortfolio))
@@ -624,6 +641,12 @@ namespace OsEngine.ViewModels
             Server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;//изменение ордера
             Server.NewCandleIncomeEvent += Server_NewCandleIncomeEvent;//пришла новая свеча
             Server.NewTradeEvent += Server_NewTradeEvent;//пришла новая обезличенная сделка
+            Server.ConnectStatusChangeEvent += Server_ConnectStatusChangeEvent;
+        }
+
+        private void Server_ConnectStatusChangeEvent(string obj)
+        {
+            ServerState = obj;
         }
 
         private void UnSubscribeToServer()
@@ -830,8 +853,6 @@ namespace OsEngine.ViewModels
             RobotWindowVM.ChangeSecurityWindow = null;
         }
 
-
-
         private void StartSecurity(Security security)
         {
             if (security == null)
@@ -855,6 +876,121 @@ namespace OsEngine.ViewModels
             });
 
 
+        }
+
+        private void Save()
+        {
+            if (!Directory.Exists(@"Parameters\Tabs"))
+            {
+                Directory.CreateDirectory(@"Parameters\Tabs");
+            }
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(@"Parameters\Tabs\param_" + NumberTab + ".txt", false))
+                {
+                    writer.WriteLine(Header);
+                    writer.WriteLine(ServerType);
+                    writer.WriteLine(StringPortfolio);
+                    writer.WriteLine(StartPoint);
+                    writer.WriteLine(CountLevels);
+                    writer.WriteLine(Direction);
+                    writer.WriteLine(Lot);
+                    writer.WriteLine(StepType);
+                    writer.WriteLine(StepLevel);
+                    writer.WriteLine(TakeLevel);
+                    writer.WriteLine(MaxActiveLevel);
+                    writer.WriteLine(PriceAverage);
+                    writer.WriteLine(Accum);
+                    writer.WriteLine(JsonConvert.SerializeObject(Levels));
+
+                    writer.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                RobotWindowVM.Log(Header + NumberTab, "Save error = " + e.Message);
+            }
+        }
+
+        private void Load()
+        {
+            if (!Directory.Exists(@"Parameters\Tabs"))
+            {
+                return;
+            }
+
+            string serverType = "";
+            ObservableCollection < Level > levels = new ObservableCollection<Level>();
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(@"Parameters\Tabs\param_" + NumberTab + ".txt"))
+                {
+                    Header = reader.ReadLine();
+                    serverType = reader.ReadLine();
+                    StringPortfolio = reader.ReadLine();
+                    StartPoint = GetDecimalForString(reader.ReadLine());
+                    CountLevels = (int)GetDecimalForString(reader.ReadLine());
+
+                    Direction direction = Direction.BUYSELL;
+                    if (Enum.TryParse(reader.ReadLine(), out direction))
+                    {
+                        Direction = direction;
+                    }
+
+                    Lot = GetDecimalForString(reader.ReadLine());
+
+                    StepType type = StepType.PUNKT;
+                    if (Enum.TryParse(reader.ReadLine(), out type))
+                    {
+                        StepType = type;
+                    }
+
+                    StepLevel = GetDecimalForString(reader.ReadLine());
+                    TakeLevel = GetDecimalForString(reader.ReadLine());
+                    MaxActiveLevel = (int)GetDecimalForString(reader.ReadLine());
+                    PriceAverage = GetDecimalForString(reader.ReadLine());
+                    Accum = GetDecimalForString(reader.ReadLine());
+
+
+                    levels = JsonConvert.DeserializeAnonymousType(reader.ReadLine(), new ObservableCollection<Level>());
+
+                    reader.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                RobotWindowVM.Log(Header + NumberTab, "Load error = " + e.Message);
+            }
+
+            if (levels != null)
+            {
+                Levels = levels;
+            }
+
+            StartServer(serverType);
+        }
+
+        private void StartServer(string serverType)
+        {
+            ServerType type = ServerType.None;
+
+            if (Enum.TryParse(serverType, out type))
+            {
+                ServerType = type;
+
+                ServerMaster.SetNeedServer(ServerType);
+            }
+        }
+
+        private decimal GetDecimalForString(string str)
+        {
+            decimal value = 0;
+
+            decimal.TryParse(str, out value);
+
+            return value;
         }
 
         private string GetStringForSave(Order order)
@@ -890,6 +1026,14 @@ namespace OsEngine.ViewModels
         }
 
 
+
+        #endregion
+
+        #region Events ====================================================
+
+        public delegate void onSelectedSecurity();
+
+        public event onSelectedSecurity OnSelectedSecurity;
 
         #endregion
     }

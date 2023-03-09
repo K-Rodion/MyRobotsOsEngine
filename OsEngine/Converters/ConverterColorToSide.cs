@@ -15,6 +15,7 @@ namespace OsEngine.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             SolidColorBrush color = Brushes.White;
+
             if (value is Side)
             {
                 if ((Side)value == Side.Buy)
@@ -26,6 +27,18 @@ namespace OsEngine.Converters
                     color = Brushes.LightPink;
                 }
 
+            }
+
+            if (value is string)
+            {
+                if ((string)value == "Connect")
+                {
+                    color = Brushes.DarkGreen;
+                }
+                else
+                {
+                    color = Brushes.DarkRed;
+                }
             }
 
             return color;

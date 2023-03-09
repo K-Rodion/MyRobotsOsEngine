@@ -29,9 +29,10 @@
 
         <StackPanel Orientation="Horizontal">
 
-            <TextBlock Text="{Binding ServerType}" FontSize="16"/>
-            <TextBlock Text="{Binding ServerState}"/>
-            <TextBlock Text="Portfolio" FontSize="16"/>
+            <TextBlock Text="{Binding ServerType}" FontSize="16"
+                       Foreground="{Binding ServerState,
+                        Converter={StaticResource ConverterColorToSide}}" Margin="5"/>
+            <TextBlock Text="Portfolio" FontSize="16" Margin="5"/>
             <ComboBox ItemsSource="{Binding StringPortfolios}"
                       SelectedItem="{Binding StringPortfolio}"
                       FontSize="16"/>
