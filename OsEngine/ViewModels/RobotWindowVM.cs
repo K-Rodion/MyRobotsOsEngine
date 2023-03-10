@@ -27,6 +27,8 @@ namespace OsEngine.ViewModels
             });
 
             Load();
+
+            ServerMaster.ActivateAutoConnection();
         }
 
         #region Properties ================================================
@@ -44,8 +46,6 @@ namespace OsEngine.ViewModels
             }
         }
         private MyRobotVM _selectedRobot;
-
-
 
         #endregion
 
@@ -120,19 +120,11 @@ namespace OsEngine.ViewModels
         {
             if (name != "")
             {
-                Robots.Add(new MyRobotVM()
-                {
-                    Header = name,
-                    NumberTab = Robots.Count + 1
-                });
+                Robots.Add(new MyRobotVM(name, Robots.Count + 1));
             }
             else
             {
-                Robots.Add(new MyRobotVM()
-                {
-                    Header = "Tab " + Robots.Count + 1,
-                    NumberTab = Robots.Count + 1
-                });
+                Robots.Add(new MyRobotVM("Tab " + Robots.Count + 1, Robots.Count + 1));
             }
 
             Robots.Last().OnSelectedSecurity += RobotWindowVM_OnSelectedSecurity;
@@ -234,6 +226,7 @@ namespace OsEngine.ViewModels
 
                     writer.Close();
                 }
+
             }
             catch (Exception e)
             {

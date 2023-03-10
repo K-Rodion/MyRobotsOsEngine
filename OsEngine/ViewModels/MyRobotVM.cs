@@ -31,8 +31,12 @@ namespace OsEngine.ViewModels
             Header = header;
             NumberTab = number;
 
+            ServerMaster.ServerCreateEvent += ServerMaster_ServerCreateEvent;
+
             Load();
         }
+
+        
 
 
 
@@ -139,16 +143,7 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(ServerType));
 
                 SubscribeToServer();
-
-                StringPortfolios = GetStringPortfolios(_server);
-
-                if (StringPortfolios != null && StringPortfolios.Count > 0)
-                {
-                    StringPortfolio = StringPortfolios[0];
-                }
-
-                OnPropertyChanged(nameof(StringPortfolios));
-
+                
                 ServerState = Server.ServerStatus.ToString();
 
                 
@@ -391,7 +386,7 @@ namespace OsEngine.ViewModels
 
         private Portfolio _portfolio;
 
-        public int NumberTab;
+        public int NumberTab = 0;
 
         #endregion
 
@@ -447,6 +442,14 @@ namespace OsEngine.ViewModels
 
         #region Methods ==========================================================
 
+        private void ServerMaster_ServerCreateEvent(IServer server)
+        {
+            if (server.ServerType == ServerType)
+            {
+                Server = server;
+            }
+        }
+
         private void TradeLogic()
         {
             if (IsRun == false || SelectedSecurity == null)
@@ -459,10 +462,7 @@ namespace OsEngine.ViewModels
                 TradeLogicOpen(level);
                 TradeLogicClose(level);
             }
-
             
-
-
         }
 
         private decimal GetStepLevel()
@@ -637,11 +637,40 @@ namespace OsEngine.ViewModels
 
         private void SubscribeToServer()
         {
-            Server.NewMyTradeEvent += Server_NewMyTradeEvent;//пришла новая сделка
-            Server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;//изменение ордера
-            Server.NewCandleIncomeEvent += Server_NewCandleIncomeEvent;//пришла новая свеча
-            Server.NewTradeEvent += Server_NewTradeEvent;//пришла новая обезличенная сделка
-            Server.ConnectStatusChangeEvent += Server_ConnectStatusChangeEvent;
+            _server.NewMyTradeEvent += Server_NewMyTradeEvent;//пришла новая сделка
+            _server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;//изменение ордера
+            _server.NewCandleIncomeEvent += Server_NewCandleIncomeEvent;//пришла новая свеча
+            _server.NewTradeEvent += Server_NewTradeEvent;//пришла новая обезличенная сделка
+            _server.ConnectStatusChangeEvent += Server_ConnectStatusChangeEvent;//изменился статус сервера
+            _server.SecuritiesChangeEvent += Server_SecuritiesChangeEvent;
+            _server.PortfoliosChangeEvent += _server_PortfoliosChangeEvent;
+        }
+
+        private void _server_PortfoliosChangeEvent(List<Portfolio> portfolios)
+        {
+            if (portfolios == null || portfolios.Count == 0)
+            {
+                return;
+            }
+
+            StringPortfolios = GetStringPortfolios(_server);
+            OnPropertyChanged(nameof(StringPortfolios));
+
+            if (StringPortfolios != null && StringPortfolios.Count > 0)
+            {
+                if (StringPortfolio == "")
+                {
+                    StringPortfolio = StringPortfolios[0];
+                }
+
+                for (int i = 0; i < portfolios.Count; i++)
+                {
+                    if (portfolios[i].Number == StringPortfolio)
+                    {
+                        _portfolio = portfolios[i];
+                    }
+                }
+            }
         }
 
         private void Server_ConnectStatusChangeEvent(string obj)
@@ -651,10 +680,25 @@ namespace OsEngine.ViewModels
 
         private void UnSubscribeToServer()
         {
-            Server.NewMyTradeEvent -= Server_NewMyTradeEvent;//пришла новая сделка
-            Server.NewOrderIncomeEvent -= Server_NewOrderIncomeEvent;//изменение ордера
-            Server.NewCandleIncomeEvent -= Server_NewCandleIncomeEvent;//пришла новая свеча
-            Server.NewTradeEvent -= Server_NewTradeEvent;//пришла новая обезличенная сделка
+            _server.NewMyTradeEvent -= Server_NewMyTradeEvent;//пришла новая сделка
+            _server.NewOrderIncomeEvent -= Server_NewOrderIncomeEvent;//изменение ордера
+            _server.NewCandleIncomeEvent -= Server_NewCandleIncomeEvent;//пришла новая свеча
+            _server.NewTradeEvent -= Server_NewTradeEvent;//пришла новая обезличенная сделка
+            _server.ConnectStatusChangeEvent -= Server_ConnectStatusChangeEvent;
+            _server.SecuritiesChangeEvent -= Server_SecuritiesChangeEvent;
+            _server.PortfoliosChangeEvent -= _server_PortfoliosChangeEvent;
+        }
+
+        private void Server_SecuritiesChangeEvent(List<Security> securities)
+        {
+            for (int i = 0; i < securities.Count; i++)
+            {
+                if (securities[i].Name == Header)
+                {
+                    SelectedSecurity = securities[i];
+                    break;
+                }
+            }
         }
 
         private void Server_NewTradeEvent(List<Trade> trades)
@@ -709,6 +753,8 @@ namespace OsEngine.ViewModels
                         }
                     }
                 }
+
+                Save();
             }
         }
 
@@ -736,6 +782,7 @@ namespace OsEngine.ViewModels
                     {
                         TradeLogicOpen(level);
                     }
+                    Save();
                 }
             }
         }
@@ -803,6 +850,7 @@ namespace OsEngine.ViewModels
 
             Levels = levels;
             OnPropertyChanged(nameof(Levels));
+            Save();
         }
 
         private Portfolio GetPortfolio(string number)
@@ -820,7 +868,7 @@ namespace OsEngine.ViewModels
             return null;
         }
 
-        private ObservableCollection<string> GetStringPortfolios(IServer server)
+        public ObservableCollection<string> GetStringPortfolios(IServer server)
         {
 
             ObservableCollection<string> stringportfolios = new ObservableCollection<string>();
@@ -857,7 +905,6 @@ namespace OsEngine.ViewModels
         {
             if (security == null)
             {
-                Debug.WriteLine("StartSecurity security = null");
                 return;
             }
 
@@ -878,7 +925,7 @@ namespace OsEngine.ViewModels
 
         }
 
-        private void Save()
+        public void Save()
         {
             if (!Directory.Exists(@"Parameters\Tabs"))
             {

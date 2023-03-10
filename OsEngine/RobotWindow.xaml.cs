@@ -42,16 +42,30 @@ namespace OsEngine
 
             this.Closed += RobotWindow_Closed;
 
-            DataContext = new RobotWindowVM();
+            windowVm = new RobotWindowVM();
+
+            DataContext = windowVm;
         }
+
+        RobotWindowVM windowVm;
 
         private void RobotWindow_Closed(object sender, EventArgs e)
         {
+            Save();
+
             MainWindow.ProccesIsWorked = false;
 
             Thread.Sleep(10000);
 
             Process.GetCurrentProcess().Kill();
+        }
+
+        private void Save()
+        {
+            foreach (var robotVM in windowVm.Robots)
+            {
+                robotVM.Save();
+            }
         }
 
         private static RobotWindow _window;

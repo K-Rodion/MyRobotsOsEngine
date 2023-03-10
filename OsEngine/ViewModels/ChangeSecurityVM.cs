@@ -110,6 +110,8 @@ namespace OsEngine.ViewModels
                 _robot.SelectedSecurity = SelectedEmitent.Security;
 
                 _robot.Server = _server;
+
+                _robot.StringPortfolios = _robot.GetStringPortfolios(_robot.Server);
             }
         }
 
