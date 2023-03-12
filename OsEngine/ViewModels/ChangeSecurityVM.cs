@@ -107,9 +107,9 @@ namespace OsEngine.ViewModels
         {
             if (SelectedEmitent != null && SelectedEmitent.Security != null)
             {
-                _robot.SelectedSecurity = SelectedEmitent.Security;
-
                 _robot.Server = _server;
+
+                _robot.SelectedSecurity = SelectedEmitent.Security;
 
                 _robot.StringPortfolios = _robot.GetStringPortfolios(_robot.Server);
             }
