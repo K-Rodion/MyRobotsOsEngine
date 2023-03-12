@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Commands;
+using OsEngine.Entity;
 using OsEngine.Market;
 using OsEngine.MyEntity;
 using OsEngine.Robots;
@@ -21,6 +22,8 @@ namespace OsEngine.ViewModels
     {
         public RobotWindowVM()
         {
+            ServerMaster.ServerCreateEvent += ServerMaster_ServerCreateEvent;
+
             Task.Run(() =>
             {
                 RecordLog();
@@ -30,6 +33,8 @@ namespace OsEngine.ViewModels
 
             ServerMaster.ActivateAutoConnection();
         }
+
+        
 
         #region Properties ================================================
 
@@ -54,6 +59,12 @@ namespace OsEngine.ViewModels
         public static ChangeSecurityWindow ChangeSecurityWindow = null;
 
         private static ConcurrentQueue<MessageForLog> _logMessages = new ConcurrentQueue<MessageForLog>();//коллекция для записи логов
+
+        public static ConcurrentDictionary<string, ConcurrentDictionary<string, Order>> Orders =
+            new ConcurrentDictionary<string, ConcurrentDictionary<string, Order>>();
+
+        public static ConcurrentDictionary<string, ConcurrentDictionary<string, MyTrade>> MyTrades =
+            new ConcurrentDictionary<string, ConcurrentDictionary<string, MyTrade>>();
 
         #endregion
 
@@ -105,6 +116,72 @@ namespace OsEngine.ViewModels
         #endregion
 
         #region Methods ==================================================
+
+        private void ServerMaster_ServerCreateEvent(Market.Servers.IServer server)
+        {
+            server.NewOrderIncomeEvent += Server_NewOrderIncomeEvent;
+            server.NewMyTradeEvent += Server_NewMyTradeEvent;
+            server.ConnectStatusChangeEvent += Server_ConnectStatusChangeEvent;
+        }
+
+        private void Server_ConnectStatusChangeEvent(string state)
+        {
+            if (state == "Connect")
+            {
+                Task.Run(async () =>
+                {
+                    DateTime dt = DateTime.Now;
+
+                    while (dt.AddMinutes(1) > DateTime.Now)
+                    {
+                        await Task.Delay(5000);
+
+                        foreach (var robot in Robots)
+                        {
+                            robot.CheckMissedOrders();
+
+                            robot.CheckMissedMyTrades();
+                        }
+                    }
+                });
+            }
+        }
+
+        private void Server_NewMyTradeEvent(MyTrade myTrade)
+        {
+            ConcurrentDictionary<string, MyTrade> myTrades = null;
+
+            if (MyTrades.TryGetValue(myTrade.SecurityNameCode, out myTrades))
+            {
+                myTrades.AddOrUpdate(myTrade.NumberTrade, myTrade, (key, value) => value = myTrade);
+            }
+            else
+            {
+                myTrades = new ConcurrentDictionary<string, MyTrade>();
+
+                myTrades.AddOrUpdate(myTrade.NumberTrade, myTrade, (key, value) => value = myTrade);
+
+                MyTrades.AddOrUpdate(myTrade.SecurityNameCode, myTrades, (key, value) => value = myTrades);
+            }
+        }
+
+        private void Server_NewOrderIncomeEvent(Order order)
+        {
+            ConcurrentDictionary<string, Order> orders = null;
+
+            if (Orders.TryGetValue(order.SecurityNameCode, out orders))
+            {
+                orders.AddOrUpdate(order.NumberMarket, order, (key, value) => value = order);
+            }
+            else
+            {
+                orders = new ConcurrentDictionary<string, Order>();
+
+                orders.AddOrUpdate(order.NumberMarket, order, (key, value) => value = order);
+
+                Orders.AddOrUpdate(order.SecurityNameCode, orders, (key, value) => value = orders);
+            }
+        }
 
         void ServersToConnect(object obj)
         {
@@ -272,7 +349,7 @@ namespace OsEngine.ViewModels
                 }
             }
 
-            if (Robots.Count > selectedNumber)
+            if (Robots.Count > selectedNumber - 1)
             {
                 SelectedRobot = Robots[selectedNumber - 1];
             }

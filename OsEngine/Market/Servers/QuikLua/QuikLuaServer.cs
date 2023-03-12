@@ -104,6 +104,28 @@ namespace OsEngine.Market.Servers.QuikLua
                 QuikLua.Service.QuikService.Start();
                 ServerStatus = ServerConnectStatus.Connect;
                 ConnectEvent?.Invoke();
+
+                GetData();
+            }
+        }
+
+        private async void GetData()
+        {
+            if (QuikLua.Service.IsConnected().Result)
+            {
+                List<QuikSharp.DataStructures.Transaction.Order> orders = await QuikLua.Orders.GetOrders();
+
+                foreach (var order in orders)
+                {
+                    EventsOnOnOrder(order);
+                }
+
+                List<QuikSharp.DataStructures.Transaction.Trade> trades = await QuikLua.Trading.GetTrades();
+
+                foreach (var trade in trades)
+                {
+                    EventsOnOnTrade(trade);
+                }
             }
         }
 

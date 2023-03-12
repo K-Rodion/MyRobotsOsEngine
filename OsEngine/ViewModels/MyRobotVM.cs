@@ -718,6 +718,54 @@ namespace OsEngine.ViewModels
             
         }
 
+        public void CheckMissedOrders()
+        {
+            if (SelectedSecurity == null)
+            {
+                return;
+            }
+
+            if (RobotWindowVM.Orders == null || RobotWindowVM.Orders.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var val in RobotWindowVM.Orders)
+            {
+                if (val.Key == SelectedSecurity.Name)
+                {
+                    foreach (var value in val.Value)
+                    {
+                        Server_NewOrderIncomeEvent(value.Value);
+                    }
+                }
+            }
+        }
+
+        public void CheckMissedMyTrades()
+        {
+            if (SelectedSecurity == null)
+            {
+                return;
+            }
+
+            if (RobotWindowVM.MyTrades == null || RobotWindowVM.MyTrades.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var val in RobotWindowVM.MyTrades)
+            {
+                if (val.Key == SelectedSecurity.Name)
+                {
+                    foreach (var value in val.Value)
+                    {
+                        Server_NewMyTradeEvent(value.Value);
+                    }
+                }
+            }
+        }
+
         private void Server_NewOrderIncomeEvent(Order order)
         {
             if (order == null)
