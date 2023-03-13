@@ -27,17 +27,21 @@ namespace OsEngine.Views
         {
             InitializeComponent();
 
-            //_vm = new MyRobotVM();
-
-            //DataContext = _vm;
+            scroll = myScrollViewer;
+            
         }
 
-        //private MyRobotVM _vm;
-
-        
+        private ScrollViewer scroll;
 
 
+        private void UIElement_OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            PreviewMouseWheel += MyRobot_PreviewMouseWheel;
+        }
 
-        
+        private void MyRobot_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            scroll.ScrollToVerticalOffset(scroll.VerticalOffset + e.Delta);
+        }
     }
 }

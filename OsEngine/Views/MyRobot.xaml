@@ -123,7 +123,8 @@
 
             <GroupBox Grid.Column="1" Header="Levels">
                 <StackPanel Orientation="Vertical">
-                    <ScrollViewer Height="400">
+                    <ScrollViewer Height="400" x:Name="myScrollViewer" 
+                                  MouseEnter="UIElement_OnMouseEnter">
                         <DataGrid ItemsSource="{Binding Levels}" AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   IsReadOnly="{Binding IsReadOnly}">
