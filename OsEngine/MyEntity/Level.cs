@@ -4,9 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using OsEngine.Charts.CandleChart.Indicators;
 using OsEngine.Entity;
+using OsEngine.Market.Servers;
 using OsEngine.Robots;
 using OsEngine.ViewModels;
 
@@ -195,6 +197,30 @@ namespace OsEngine.MyEntity
 
 
         #region Methods ====================================================================================
+
+        public void SetVolumeStart()
+        {
+            if (Volume == 0 && LimitVolume == 0 && TakeVolume == 0)
+            {
+                ClearOrders(ref OrdersForOpen);
+                ClearOrders(ref OrdersForClose);
+            }
+        }
+
+        private void ClearOrders(ref List<Order> orders)
+        {
+            List<Order> temp = new List<Order>();
+
+            foreach (Order order in orders)
+            {
+                if (order != null && (order.State != OrderStateType.Cancel || order.State != OrderStateType.Done))
+                {
+                    temp.Add(order);
+                }
+            }
+
+            orders = temp;
+        }
 
         public bool AddMyTrade(MyTrade newTrade, Security security)
         {
@@ -426,6 +452,29 @@ namespace OsEngine.MyEntity
             str += "TakePrice = " + TakePrice.ToString(CultureInfo) + " | ";
 
             return str;
+        }
+
+        public void CancelAllOrders(IServer server, string header)
+        {
+            CancelOrders(OrdersForOpen, server);
+            CancelOrders(OrdersForClose, server);
+            RobotWindowVM.Log(header, GetStringForSave());
+        }
+
+        private void CancelOrders(List<Order> orders, IServer server)
+        {
+            foreach (var order in orders)
+            {
+                if (order != null)
+                {
+                    if (order.State == OrderStateType.Activ || order.State == OrderStateType.Patrial || order.State == OrderStateType.Pending)
+                    {
+                        server.CancelOrder(order);
+                        Thread.Sleep(30);
+                        
+                    }
+                }
+            }
         }
 
         #endregion

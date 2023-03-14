@@ -377,6 +377,17 @@ namespace OsEngine.ViewModels
 
         private decimal _total;
 
+        public bool IsChekCurrency
+        {
+            get => _isChekCurrency;
+
+            set
+            {
+                _isChekCurrency = value;
+                OnPropertyChanged(nameof(IsChekCurrency));
+            }
+        }
+        private bool _isChekCurrency = false;
 
 
 
@@ -497,7 +508,11 @@ namespace OsEngine.ViewModels
                 if ((level.Side == Side.Buy && level.PriceLevel >= borderDown)
                     || (level.Side == Side.Sell && level.PriceLevel <= borderUp))
                 {
-                    decimal workLot = Lot - Math.Abs(level.Volume) - level.LimitVolume;
+                    decimal lot = CalcWorkLot(Lot, level.PriceLevel);
+
+                    decimal workLot = lot - Math.Abs(level.Volume) - level.LimitVolume;
+
+                    if (workLot == 0) return;
 
                     RobotWindowVM.Log(Header, "Level = " + level.GetStringForSave());
                     RobotWindowVM.Log(Header, "workLot = " + workLot);
@@ -604,7 +619,21 @@ namespace OsEngine.ViewModels
 
             Total = Accum + VarMargin;
         }
-        
+
+        private decimal CalcWorkLot(decimal lot, decimal price)
+        {
+            decimal workLot = lot;
+
+            if (IsChekCurrency)
+            {
+                workLot = lot / price;
+            }
+
+            workLot = decimal.Round(workLot, SelectedSecurity.DecimalsVolume);
+
+            return workLot;
+        }
+
         private Order SendOrder(Security sec , decimal price, decimal volume, Side side)
         {
             if (string.IsNullOrEmpty(StringPortfolio))
@@ -632,7 +661,59 @@ namespace OsEngine.ViewModels
 
         private void StartStop(object o)
         {
+            if (Server == null || Server.ServerStatus == ServerConnectStatus.Disconnect)
+            {
+                return;
+            }
+
             IsRun = !IsRun;
+
+            RobotWindowVM.Log(Header, "StartStop = " + IsRun);
+
+            if (IsRun)
+            {
+                foreach (var level in Levels)
+                {
+                    level.SetVolumeStart();
+
+                    level.PassVolume = true;
+                    level.PassTake = true;
+                }
+            }
+            else
+            {
+                
+
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        foreach (var level in Levels)
+                        {
+                            level.CancelAllOrders(Server, Header);
+                        }
+
+                        Thread.Sleep(3000);
+
+                        bool flag = true;
+
+                        foreach (var level in Levels)
+                        {
+                            if (level.LimitVolume != 0 || level.TakeVolume != 0)
+                            {
+                                flag = false; 
+                                break;
+                            }
+                        }
+
+                        if (flag)
+                        {
+                            break;
+                        }
+                    }
+                });
+                
+            }
         }
 
         private void SubscribeToServer()
@@ -673,9 +754,18 @@ namespace OsEngine.ViewModels
             }
         }
 
-        private void Server_ConnectStatusChangeEvent(string obj)
+        private void Server_ConnectStatusChangeEvent(string state)
         {
-            ServerState = obj;
+            ServerState = state;
+
+            if (state == "Connect")
+            {
+                GetStateOrders();
+            }
+            else
+            {
+                IsRun = false;
+            }
         }
 
         private void UnSubscribeToServer()
@@ -705,9 +795,16 @@ namespace OsEngine.ViewModels
         {
             if (trades != null && trades[0].SecurityNameCode == SelectedSecurity.Name)
             {
-                Price = trades.Last().Price;
+                Trade trade = trades.Last();
+
+                Price = trade.Price;
 
                 CalculateMargin();
+
+                if (trade.Time.Second % 10 == 0)
+                {
+                    TradeLogic();
+                }
             }
 
             
@@ -1076,6 +1173,45 @@ namespace OsEngine.ViewModels
                 ServerType = type;
 
                 ServerMaster.SetNeedServer(ServerType);
+            }
+        }
+
+        private void GetStateOrders()
+        {
+            if (Server != null)
+            {
+                if (Server.ServerType == ServerType.BinanceFutures)
+                {
+                    AServer aServer = (AServer)Server;
+
+                    List<Order> orders = new List<Order>();
+
+                    foreach (var level in Levels)
+                    {
+                        GetStateOrders(level.OrdersForOpen, ref orders);
+
+                        GetStateOrders(level.OrdersForClose, ref orders);
+                    }
+
+                    if (orders.Count > 0)
+                    {
+                        aServer.ServerRealization.GetOrdersState(orders);
+                    }
+                }
+            }
+        }
+
+        private void GetStateOrders(List<Order> orders, ref List<Order> stateOrders)
+        {
+            foreach (var order in orders)
+            {
+                if (order != null)
+                {
+                    if (order.State == OrderStateType.Activ || order.State == OrderStateType.Patrial || order.State == OrderStateType.Pending)
+                    {
+                        stateOrders.Add(order);
+                    }
+                }
             }
         }
 
