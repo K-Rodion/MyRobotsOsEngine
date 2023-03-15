@@ -52,6 +52,18 @@ namespace OsEngine.ViewModels
         }
         private MyRobotVM _selectedRobot;
 
+        public bool ServerWait
+        {
+            get => _serverWait;
+
+            set
+            {
+                _serverWait = value;
+                OnPropertyChanged(nameof(ServerWait));
+            }
+        }
+        private bool _serverWait = false;
+
         #endregion
 
         #region Fields ====================================================
@@ -134,6 +146,8 @@ namespace OsEngine.ViewModels
 
                     while (dt.AddMinutes(1) > DateTime.Now)
                     {
+                        ServerWait = true;
+
                         await Task.Delay(5000);
 
                         foreach (var robot in Robots)
@@ -143,6 +157,7 @@ namespace OsEngine.ViewModels
                             robot.CheckMissedMyTrades();
                         }
                     }
+                    ServerWait = false;
                 });
             }
         }

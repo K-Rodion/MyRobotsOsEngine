@@ -16,6 +16,8 @@
                 <Button Content="Servers" 
                         ToolTip="Connect to Exchange"
                         Command="{Binding CommandServersToConnect}"/>
+                <mah:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                  IsActive="{Binding ServerWait}" Height="30" Width="20"/>
                 <Button Content="Add security"
                         Command="{Binding CommandAddEmitent}"/>
                 <TextBlock Text="{Binding StateTg}" Margin="10,7"/>
