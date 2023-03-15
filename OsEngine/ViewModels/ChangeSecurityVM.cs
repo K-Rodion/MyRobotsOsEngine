@@ -31,6 +31,8 @@ namespace OsEngine.ViewModels
 
         public ObservableCollection<Emitent> Securities { get; set; } = new ObservableCollection<Emitent>();
 
+        public ObservableCollection<Emitent> AllEmitents { get; set; } = new ObservableCollection<Emitent>();
+
         public Emitent SelectedEmitent
         {
             get => _selectedEmitent;
@@ -42,6 +44,18 @@ namespace OsEngine.ViewModels
             }
         }
         private Emitent _selectedEmitent;
+
+        public string SearchSec
+        {
+            get => _searchSec;
+
+            set
+            {
+                _searchSec = value;
+                OnPropertyChanged(nameof(SearchSec));
+            }
+        }
+        private string _searchSec;
 
         #endregion
 
@@ -99,9 +113,44 @@ namespace OsEngine.ViewModels
             }
         }
 
+        private DelegateCommand _commandSearchSecurity;
+
+        public DelegateCommand CommandSearchSecurity
+        {
+            get
+            {
+                if (_commandSearchSecurity == null)
+                {
+                    _commandSearchSecurity = new DelegateCommand(SearchSecurity);
+                }
+                return _commandSearchSecurity;
+            }
+        }
+
         #endregion
 
         #region Methods ============================================================================================
+
+        public void SearchSecurity(object obj)
+        {
+            string searchQuery = SearchSec.ToLower();
+
+            for (int i = Securities.Count - 1; i >= 0; i--)
+            {
+                if (!Securities[i].NameSec.ToLower().Contains(searchQuery))
+                {
+                    Securities.Remove(Securities[i]);
+                }
+            }
+
+            foreach (var emitent in AllEmitents)
+            {
+                if (emitent.NameSec.ToLower().Contains(searchQuery) && !Securities.Contains(emitent))
+                {
+                    Securities.Add(emitent);
+                }
+            }
+        }
 
         void Change(object obj)
         {

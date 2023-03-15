@@ -299,7 +299,8 @@ namespace OsEngine.ViewModels
                 {
                     writer.WriteLine(str);
 
-                    writer.WriteLine(SelectedRobot.NumberTab);
+                    //writer.WriteLine(SelectedRobot.NumberTab);
+                    writer.WriteLine(Robots[Robots.Count - 1].NumberTab);
 
                     writer.Close();
                 }

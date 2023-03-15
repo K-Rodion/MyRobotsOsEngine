@@ -113,6 +113,9 @@
                         <TextBlock Text="Total"/>
                         <TextBlock Text="{Binding Total,
                                             StringFormat={}{0:0.######################################}}"/>
+                        <TextBlock Text="Depo"/>
+                        <TextBlock Text="{Binding Depo,
+                                            StringFormat={}{0:0.######################################}}"/>
                     </UniformGrid>
 
                 </GroupBox>
@@ -123,7 +126,7 @@
 
             <GroupBox Grid.Column="1" Header="Levels">
                 <StackPanel Orientation="Vertical">
-                    <ScrollViewer Height="400" x:Name="myScrollViewer" 
+                    <ScrollViewer Height="475" x:Name="myScrollViewer" 
                                   MouseEnter="UIElement_OnMouseEnter">
                         <DataGrid ItemsSource="{Binding Levels}" AutoGenerateColumns="False"
                                   CanUserAddRows="False"

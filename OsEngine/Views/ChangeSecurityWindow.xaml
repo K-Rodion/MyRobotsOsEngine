@@ -66,12 +66,14 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Selected security: " Height="25"/>
+                    <TextBox Text="{Binding SearchSec}" Width="80" Margin="5, 2"/>
+                    <Button Content="Search" Command="{Binding CommandSearchSecurity}" Margin="5, 2"/>
+                    <TextBlock Text="Selected security: " Height="25" VerticalAlignment="Bottom"/>
                     <TextBlock Text="{Binding SelectedEmitent.NameSec, Mode=OneWay}"
-                               Width="100" Height="25" Margin="5, 2"/>
-                    <Button Content="Change" Command="{Binding CommandChange}"/>
+                               Width="100" Height="25" Margin="5, 2" VerticalAlignment="Bottom"/>
+                    <Button Content="Change" Command="{Binding CommandChange}" Margin="5, 2"/>
                 </StackPanel>
-                <GridSplitter Grid.Row="1"></GridSplitter>
+                <GridSplitter Grid.Row="1"/>
                 <DataGrid Grid.Row="2"  
                           ItemsSource="{Binding Securities}"
                           SelectedItem="{Binding SelectedEmitent}"

@@ -41,7 +41,7 @@ namespace OsEngine.Views
 
         private void MyRobot_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            scroll.ScrollToVerticalOffset(scroll.VerticalOffset + e.Delta);
+            scroll.ScrollToVerticalOffset(scroll.VerticalOffset - e.Delta);
         }
     }
 }

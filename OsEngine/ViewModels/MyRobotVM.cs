@@ -52,7 +52,7 @@ namespace OsEngine.ViewModels
             {
                 if (SelectedSecurity != null)
                 {
-                    return SelectedSecurity.NameId;
+                    return SelectedSecurity.Name;
                 }
                 else
                 {
@@ -374,8 +374,19 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Total));
             }
         }
-
         private decimal _total;
+
+        public decimal Depo
+        {
+            get => _depo;
+
+            set
+            {
+                _depo = value;
+                OnPropertyChanged(nameof(Depo));
+            }
+        }
+        private decimal _depo;
 
         public bool IsChekCurrency
         {
@@ -618,6 +629,8 @@ namespace OsEngine.ViewModels
             Accum = Math.Round(accum, SelectedSecurity.Decimals);
 
             Total = Accum + VarMargin;
+
+            Depo = _portfolio.ValueCurrent;
         }
 
         private decimal CalcWorkLot(decimal lot, decimal price)
