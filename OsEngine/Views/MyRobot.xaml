@@ -97,27 +97,61 @@
 
                 <GroupBox Header="Position"
                       Height="200" VerticalAlignment="Top" Margin="2">
-                    <UniformGrid Columns="2">
-                        <TextBlock Text="All positions"/>
-                        <TextBlock Text="{Binding AllPositionsCount,
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="All positions"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+                                   Text="{Binding AllPositionsCount,
                                             StringFormat={}{0:0.######################################}}"/>
-                        <TextBlock Text="Price average"/>
-                        <TextBlock Text="{Binding PriceAverage,
+                        <TextBlock Text="Price average" Grid.Row="1" Grid.Column="0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" 
+                                   Text="{Binding PriceAverage,
                                             StringFormat={}{0:0.######################################}}"/>
-                        <TextBlock Text="Var margin"/>
-                        <TextBlock Text="{Binding VarMargin,
+                        <TextBlock Text="Var margin" Grid.Row="2" Grid.Column="0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding VarMargin,
                                             StringFormat={}{0:0.######################################}}"/>
-                        <TextBlock Text="Accum"/>
-                        <TextBlock Text="{Binding Accum,
+                        <TextBlock Grid.Row="2" Grid.Column="2"
+                                   Text="{Binding VarMarginMoney,
                                             StringFormat={}{0:0.######################################}}"/>
-                        <TextBlock Text="Total"/>
-                        <TextBlock Text="{Binding Total,
+                        <TextBlock Text="Accum" Grid.Row="3" Grid.Column="0"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Accum,
                                             StringFormat={}{0:0.######################################}}"/>
-                        <TextBlock Text="Depo"/>
-                        <TextBlock Text="{Binding Depo,
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding AccumMoney,
                                             StringFormat={}{0:0.######################################}}"/>
-                    </UniformGrid>
-
+                        <TextBlock Text="Total" Grid.Row="4" Grid.Column="0"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Total,
+                                            StringFormat={}{0:0.######################################}}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding TotalMoney,
+                                            StringFormat={}{0:0.######################################}}"/>
+                        <TextBlock Text="Depo" Grid.Row="5" Grid.Column="0"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" 
+                                   Text="{Binding Depo,
+                                            StringFormat={}{0:0.######################################}}"/>
+                        <TextBlock Text="Blocked money" Grid.Row="6" Grid.Column="0"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" 
+                                   Text="{Binding BlockedMoney,
+                                            StringFormat={}{0:0.######################################}}"/>
+                        <TextBlock Text="Profit portfolio" Grid.Row="7" Grid.Column="0"/>
+                        <TextBlock Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" 
+                                   Text="{Binding ProfitPortfolio,
+                                            StringFormat={}{0:0.######################################}}"/>
+                    </Grid>
+                    
                 </GroupBox>
                 <Button Content="{Binding IsRun, Converter={StaticResource ConverterIsRunToBool}}" 
                         Command="{Binding CommandStartStop}"

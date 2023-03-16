@@ -348,8 +348,19 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(VarMargin));
             }
         }
-
         private decimal _varMargin;
+
+        public decimal VarMarginMoney
+        {
+            get => _varMarginMoney;
+
+            set
+            {
+                _varMarginMoney = value;
+                OnPropertyChanged(nameof(VarMarginMoney));
+            }
+        }
+        private decimal _varMarginMoney;
 
         public decimal Accum
         {
@@ -361,8 +372,19 @@ namespace OsEngine.ViewModels
                 OnPropertyChanged(nameof(Accum));
             }
         }
-
         private decimal _accum;
+
+        public decimal AccumMoney
+        {
+            get => _accumMoney;
+
+            set
+            {
+                _accumMoney = value;
+                OnPropertyChanged(nameof(AccumMoney));
+            }
+        }
+        private decimal _accumMoney;
 
         public decimal Total
         {
@@ -376,6 +398,18 @@ namespace OsEngine.ViewModels
         }
         private decimal _total;
 
+        public decimal TotalMoney
+        {
+            get => _totalMoney;
+
+            set
+            {
+                _totalMoney = value;
+                OnPropertyChanged(nameof(TotalMoney));
+            }
+        }
+        private decimal _totalMoney;
+
         public decimal Depo
         {
             get => _depo;
@@ -387,6 +421,30 @@ namespace OsEngine.ViewModels
             }
         }
         private decimal _depo;
+
+        public decimal BlockedMoney
+        {
+            get => _blockedMoney;
+
+            set
+            {
+                _blockedMoney = value;
+                OnPropertyChanged(nameof(BlockedMoney));
+            }
+        }
+        private decimal _blockedMoney;
+
+        public decimal ProfitPortfolio
+        {
+            get => _profitPortfolio;
+
+            set
+            {
+                _profitPortfolio = value;
+                OnPropertyChanged(nameof(ProfitPortfolio));
+            }
+        }
+        private decimal _profitPortfolio;
 
         public bool IsChekCurrency
         {
@@ -626,11 +684,17 @@ namespace OsEngine.ViewModels
             AllPositionsCount = Math.Round(volume, SelectedSecurity.Decimals);
             PriceAverage = Math.Round(averPrice, SelectedSecurity.Decimals);
             VarMargin = Math.Round(margine, SelectedSecurity.Decimals);
+            VarMarginMoney = Math.Round(VarMargin / SelectedSecurity.PriceStep * SelectedSecurity.PriceStepCost, 1);
             Accum = Math.Round(accum, SelectedSecurity.Decimals);
-
+            AccumMoney = Math.Round(Accum / SelectedSecurity.PriceStep * SelectedSecurity.PriceStepCost, 1);
             Total = Accum + VarMargin;
+            TotalMoney = Math.Round(Total / SelectedSecurity.PriceStep * SelectedSecurity.PriceStepCost, 1);
 
             Depo = _portfolio.ValueCurrent;
+            BlockedMoney = _portfolio.ValueBlocked;
+            ProfitPortfolio = _portfolio.Profit;
+
+
         }
 
         private decimal CalcWorkLot(decimal lot, decimal price)
