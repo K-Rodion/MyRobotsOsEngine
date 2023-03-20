@@ -21,6 +21,12 @@ using OsEngine.Market.Servers;
 using OsEngine.MyEntity;
 using OsEngine.Robots;
 using OsEngine.Views;
+using OxyPlot;
+using OxyPlot.Annotations;
+using OxyPlot.Axes;
+using OxyPlot.Series;
+using DataPoint = OxyPlot.DataPoint;
+using DateTimeIntervalType = OxyPlot.Axes.DateTimeIntervalType;
 
 namespace OsEngine.ViewModels
 {
@@ -30,6 +36,8 @@ namespace OsEngine.ViewModels
         {
             Header = header;
             NumberTab = number;
+
+            SetModel();
 
             ServerMaster.ServerCreateEvent += ServerMaster_ServerCreateEvent;
 
@@ -45,6 +53,34 @@ namespace OsEngine.ViewModels
         public ObservableCollection<string> StringPortfolios { get; set; } = new ObservableCollection<string>();
 
         public ObservableCollection<Level> Levels { get; set; } = new ObservableCollection<Level>();
+
+        public PlotModel Model
+        {
+            get => _model;
+
+            set
+            {
+                _model = value;
+                OnPropertyChanged(nameof(Model));
+            }
+        }
+
+        private PlotModel _model = new PlotModel()
+        {
+            Background = OxyColors.DimGray
+        };
+
+        public PlotController Controller
+        {
+            get => _controller;
+
+            set
+            {
+                _controller = value;
+                OnPropertyChanged(nameof(Controller));
+            }
+        }
+        private PlotController _controller;
 
         public string Header
         {
@@ -468,6 +504,21 @@ namespace OsEngine.ViewModels
 
         public int NumberTab = 0;
 
+        private DateTime _lastTimeCandle = DateTime.MinValue;
+
+        private CandleStickSeries _candleSeries = new CandleStickSeries
+        {
+            Color = OxyColors.Black,
+            IncreasingColor = OxyColors.DarkGreen,
+            DecreasingColor = OxyColors.Red,
+            DataFieldX = "Time",
+            DataFieldHigh = "H",
+            DataFieldLow = "L",
+            DataFieldOpen = "O",
+            DataFieldClose = "C",
+            TrackerFormatString = "High: {2:0.00}\nLow: {3:0.00}\nOpen: {4:0.00}\nClose: {5:0.00}"
+        };
+
         #endregion
 
         #region Commands ==========================================================
@@ -882,6 +933,42 @@ namespace OsEngine.ViewModels
                 {
                     TradeLogic();
                 }
+
+                if (trade.Time.Second % 2 == 0)
+                {
+                    double x = DateTimeAxis.ToDouble(trade.Time);
+
+                    double y = (double)trade.Price;
+
+                    double heigh = Model.Axes[1].ActualMaximum - Model.Axes[1].ActualMinimum;
+
+                    double offset = heigh / 100;
+
+                    OxyColor color;
+
+                    if (trade.Side == Side.Buy)
+                    {
+                        offset *= -1;
+                        color = OxyColors.Green;
+                    }
+                    else
+                    {
+                        color = OxyColors.Red;
+                    }
+
+                    Model.Annotations.Clear();
+
+                    Model.Annotations.Add(new OxyPlot.Annotations.ArrowAnnotation
+                    {
+                        StartPoint = new DataPoint(x, y+offset),
+                        EndPoint = new DataPoint(x, y),
+                        Color = color,
+                        Text = trade.Price.ToString()
+                    });
+
+                    Model.InvalidatePlot(true);
+                    OnPropertyChanged(nameof(Model));
+                }
             }
 
             
@@ -889,7 +976,70 @@ namespace OsEngine.ViewModels
 
         private void Server_NewCandleIncomeEvent(CandleSeries series)
         {
-            
+            if (series.Security.Name != SelectedSecurity.Name)
+            {
+                return;
+            }
+
+            if (_lastTimeCandle == DateTime.MinValue 
+                && _candleSeries.Items.Count == 0
+                && series.CandlesAll.Count > 0)
+            {
+                foreach (var candle in series.CandlesAll)
+                {
+                    SetCandle(candle);
+                }
+
+                double x = _candleSeries.Items[0].X;
+
+                if (_candleSeries.Items.Count > 100)
+                {
+                    x = _candleSeries.Items[_candleSeries.Items.Count - 100].X;
+                }
+
+                Model.Axes[0].Minimum = x;
+                Model.Axes[0].Maximum = _candleSeries.Items.Last().X + (_candleSeries.Items.Last().X - x)/20;
+
+                return;
+            }
+
+            Candle lastCandle = series.CandlesAll.Last();
+
+            SetCandle(lastCandle);
+        }
+
+        private void SetCandle(Candle candle)
+        {
+            if (candle == null) return;
+
+            HighLowItem hlc = GetCandle(candle);
+
+            if (_lastTimeCandle < candle.TimeStart)
+            {
+                _candleSeries.Items.Add(hlc);
+
+                _lastTimeCandle = candle.TimeStart;
+            }
+            else
+            {
+                HighLowItem item = _candleSeries.Items.Last();
+
+                _candleSeries.Items.Remove(item);
+
+                _candleSeries.Items.Add(hlc);
+            }
+        }
+
+        private HighLowItem GetCandle(Candle candle)
+        {
+            double open = (double)candle.Open;
+            double high = (double)candle.High;
+            double close = (double)candle.Close;
+            double low = (double)candle.Low;
+
+            double x = DateTimeAxis.ToDouble(candle.TimeStart);
+
+            return new HighLowItem(x, high, low, open, close);
         }
 
         public void CheckMissedOrders()
@@ -1333,7 +1483,78 @@ namespace OsEngine.ViewModels
             return str;
         }
 
+        private void SetModel()
+        {
+            Model.Title = Header;
 
+            DateTimeAxis dataAxis = new DateTimeAxis()
+            {
+                Position = AxisPosition.Bottom,
+                MinorIntervalType = DateTimeIntervalType.Auto,
+                MajorGridlineStyle = LineStyle.Dot,
+                MinorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColors.LightGray,
+                TicklineColor = OxyColor.FromRgb(82, 82, 82)
+            };
+
+            LinearAxis linearAxis = new LinearAxis()
+            {
+                Position = AxisPosition.Right,
+                MajorGridlineStyle = LineStyle.Dot,
+                MinorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColors.LightGray,
+                TicklineColor = OxyColor.FromRgb(82, 82, 82)
+            };
+
+            Model.Axes.Add(dataAxis);
+            Model.Axes.Add(linearAxis);
+
+            dataAxis.AxisChanged += (sender, e) => AdjustYExtent(_candleSeries, dataAxis, linearAxis);
+
+            Model.Series.Add(_candleSeries);
+
+            Controller = new PlotController();
+
+            Controller.BindMouseDown(OxyMouseButton.Left, PlotCommands.PanAt);
+
+            Controller.BindMouseDown(OxyMouseButton.Right, PlotCommands.SnapTrack);
+
+            
+        }
+
+        /// <summary>
+        /// Adjust the Y extent
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="xaxis"></param>
+        /// <param name="yaxis"></param>
+        private static void AdjustYExtent(CandleStickSeries series, DateTimeAxis xaxis, LinearAxis yaxis)
+        {
+            if (series.Items == null || series.Items.Count == 0)
+            {
+                return;
+            }
+
+            var xmin = xaxis.ActualMinimum;
+            var xmax = xaxis.ActualMaximum;
+
+            var istart = series.FindByX(xmin);
+            var iend = series.FindByX(xmax, istart);
+
+            var ymin = double.MaxValue;
+            var ymax = double.MinValue;
+            for (int i = istart; i <= iend; i++)
+            {
+                var bar = series.Items[i];
+                ymin = Math.Min(ymin, bar.Low);
+                ymax = Math.Max(ymax, bar.High);
+            }
+
+            var extent = ymax - ymin;
+            var margin = extent * 0.10;
+
+            yaxis.Zoom(ymin - margin, ymax + margin);
+        }
 
         #endregion
 
