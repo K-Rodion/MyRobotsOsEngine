@@ -384,7 +384,6 @@ namespace OsEngine.MyEntity
                 else if (order.State == OrderStateType.Pending || order.State == OrderStateType.None)
                 {
                     passLimit = false;
-                    RobotWindowVM.Log("CalculateOrders passLimit = false", order.GetStringForSave().ToString());//================
                 }
             }
 
@@ -399,7 +398,6 @@ namespace OsEngine.MyEntity
                 else if (order.State == OrderStateType.Pending || order.State == OrderStateType.None)
                 {
                     passTake = false;
-                    RobotWindowVM.Log("CalculateOrders passTake = false", order.GetStringForSave().ToString());//================
                 }
             }
 
