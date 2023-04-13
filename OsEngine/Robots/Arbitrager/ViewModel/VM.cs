@@ -47,6 +47,17 @@ namespace OsEngine.Robots.Arbitrager.ViewModel
             }
         }
 
+        public decimal Step
+        {
+            get => _bot.Step;
+
+            set
+            {
+                _bot.Step = value;
+                OnPropertyChanged(nameof(Step));
+            }
+        }
+
         public decimal Spread
         {
             get => _bot.Spread;

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OsEngine.Robots.Arbitrager.View"
         mc:Ignorable="d"
-        Title="ArbitragerUI" Height="200" Width="250">
+        Title="ArbitragerUI" Height="250" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
@@ -16,18 +16,20 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Text="Спред" Margin="5" HorizontalAlignment="Center"/>
         <TextBlock Grid.Row="1" Text="Лот" Margin="5" HorizontalAlignment="Center"/>
         <TextBlock Grid.Row="2" Text="Тейк-профит" Margin="5" HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="3" Text="Шаг" Margin="5" HorizontalAlignment="Center"/>
         <TextBox Grid.Column="1" Text="{Binding Spread}" Margin="5"/>
         <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Lot}" Margin="5"/>
         <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Take}" Margin="5"/>
-
+        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Step}" Margin="5"/>
         <Button Content="{Binding EDIT}"
                 Command="{Binding CommandStart}"
                 Grid.Column="0" Grid.ColumnSpan="2"
-                Grid.Row="3" Margin="10"/>
+                Grid.Row="4" Margin="10"/>
 
     </Grid>
 </Window>
